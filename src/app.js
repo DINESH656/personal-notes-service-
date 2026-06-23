@@ -9,17 +9,17 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.json({
+  return res.status(200).json({
     success: true,
-    message: "Personal Notes Service API is running",
+    message: "Personal Knowledge Base API is running",
   });
 });
 
-app.use("/api/users", userRoutes);
+app.use("/api/auth", userRoutes);
 app.use("/api/notes", noteRoutes);
 
 app.use((req, res) => {
-  res.status(404).json({
+  return res.status(404).json({
     success: false,
     message: "Route not found",
   });

@@ -7,6 +7,9 @@ export const authenticateUser = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
+    // Debug logs (temporary) — don't print full token in production
+    console.debug("auth.middleware: Authorization header:", authHeader);
+
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
         success: false,
@@ -15,8 +18,24 @@ export const authenticateUser = (req, res, next) => {
     }
 
     const token = authHeader.split(" ")[1];
+    if (token) console.debug("auth.middleware: token fragment:", token.slice(0, 10) + "...");
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!process.env.JWT_SECRET) {
+      console.error("auth.middleware: JWT_SECRET is not configured");
+      return res.status(500).json({
+        success: false,
+        message: "JWT secret is not configured",
+      });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.debug("auth.middleware: decoded token payload:", decoded);
+    } catch (verifyError) {
+      console.error("auth.middleware: token verification error:", verifyError.message);
+      throw verifyError;
+    }
 
     req.user = {
       id: decoded.id,
@@ -25,9 +44,10 @@ export const authenticateUser = (req, res, next) => {
 
     next();
   } catch (error) {
+    console.error("auth.middleware: authentication failed:", error.message);
     return res.status(401).json({
       success: false,
-      message: "Invalid or expired token.",
+      message: "Invalid or expired token",
     });
   }
 };

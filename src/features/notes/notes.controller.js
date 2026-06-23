@@ -61,7 +61,7 @@ export const getMyNotesController = async (req, res) => {
 
 export const getMyNotesById = async (req, res) => {
   try {
-    const { notesId } = req.params;
+    const { notesId } = req.params.id;
     const note = await getNoteById({
       noteId: notesId,
       userId: req.user.id,
@@ -85,17 +85,17 @@ export const getMyNotesById = async (req, res) => {
 };
 export const updateNotesController = async(req , res) =>{
   try{ 
-    const {notesId} = req.params;
+    const {notesId} = req.params.id;
     const {title} = req.body;
     const context = req.body.context ?? req.body.content ;
     if(!title || !title.trim()){
-      return res.status.json({
+      return res.status(400).json({
         success : false ,
         message : 'note title is required '
       });
     }
     if(!context || !context.trim()){
-      return res.status.json({
+      return res.status(400).json({
         success :false ,
         message : 'note context is required'
       });
@@ -115,7 +115,7 @@ export const updateNotesController = async(req , res) =>{
     return res.status(200).json({
       success : true ,
       message : 'note updated successfully ',
-      data : {note : updateNotes}
+      data: { note: updatedNotes }
     });
     
   }

@@ -3,13 +3,13 @@ import {
   getNotesByUser,
   getNoteById,
   updateNotes,
+  deleteNotes,
+  searchNotes,
 } from "./notes.service.js";
 
 export const createNoteController = async (req, res) => {
   try {
-    const { title } = req.body;
-    const context = req.body.context ?? req.body.content;
-
+    const { title, content, category } = req.body;
     if (!title || !title.trim()) {
       return res.status(400).json({
         success: false,
@@ -17,17 +17,24 @@ export const createNoteController = async (req, res) => {
       });
     }
 
-    if (!context || !context.trim()) {
+    if (!content || !content.trim()) {
       return res.status(400).json({
         success: false,
-        message: "Note context is required",
+        message: "Note content is required",
+      });
+    }
+    if (!category || !category.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "note category is required",
       });
     }
 
     const note = await createNote({
       userId: req.user.id,
       title,
-      context,
+      content,
+      category,
     });
 
     return res.status(201).json({
@@ -36,9 +43,9 @@ export const createNoteController = async (req, res) => {
       data: { note },
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(error.statusCode || 500).json({
       success: false,
-      message: error.message,
+      message: error.message || "something went wrong ",
     });
   }
 };
@@ -49,80 +56,145 @@ export const getMyNotesController = async (req, res) => {
 
     return res.status(200).json({
       success: true,
+      message: "notes fetched successfully ",
       data: { notes },
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(error.statusCode || 500).json({
       success: false,
-      message: error.message,
+      message: error.message || "something went wrong ",
     });
   }
 };
 
 export const getMyNotesById = async (req, res) => {
   try {
-    const { notesId } = req.params.id;
+    const noteId = req.params.id;
     const note = await getNoteById({
-      noteId: notesId,
+      noteId,
       userId: req.user.id,
     });
-    if(!note){
+
+    if (!note) {
       return res.status(404).json({
-        success : false,
-        message : 'note not found'
+        success: false,
+        message: "note not found",
       });
     }
     return res.status(200).json({
-      success:true,
-      data : {note}
+      success: true,
+      message: "note fetched successfully",
+      data: { note },
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(error.statusCode || 500).json({
       success: false,
-      message: error.message,
+      message: error.message || "something went wrong ",
     });
   }
 };
-export const updateNotesController = async(req , res) =>{
-  try{ 
-    const {notesId} = req.params.id;
-    const {title} = req.body;
-    const context = req.body.context ?? req.body.content ;
-    if(!title || !title.trim()){
+export const updateNotesController = async (req, res) => {
+  try {
+    const noteId = req.params.id;
+    const { title, content, category } = req.body;
+
+    if (!title || !title.trim()) {
       return res.status(400).json({
-        success : false ,
-        message : 'note title is required '
+        success: false,
+        message: "note title is required ",
       });
     }
-    if(!context || !context.trim()){
+    if (!content || !content.trim()) {
       return res.status(400).json({
-        success :false ,
-        message : 'note context is required'
+        success: false,
+        message: "note context is required",
       });
     }
+    if (!category || !category.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "note category is required",
+      });
+    }
+
     const updatedNotes = await updateNotes({
-      noteId : notesId,
-      userId : req.user.id,
-      title ,
-      context 
+      noteId,
+      userId: req.user.id,
+      title,
+      content,
+      category,
     });
-    if(!updatedNotes){
+    if (!updatedNotes) {
       return res.status(404).json({
-        success :false ,
-        message : 'Note not found or you are not allowed to update it'
-      })
+        success: false,
+        message: "Note not found or you are not allowed to update it",
+      });
     }
     return res.status(200).json({
-      success : true ,
-      message : 'note updated successfully ',
-      data: { note: updatedNotes }
+      success: true,
+      message: "note updated successfully ",
+      data: { note: updatedNotes },
     });
-    
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || "something went wrong ",
+    });
   }
-  catch(error){
-    return res.status(500).json({
-      success: false ,
-      message : error.message,
+};
+export const deleteNoteController = async (req, res) => {
+  try {
+    const noteId = req.params.id;
+    const deletedNote = await deleteNotes({
+      noteId,
+      userId: req.user.id,
+    });
+    if (!deletedNote) {
+      return res.status(404).json({
+        success: false,
+        message: "Note not found or you are not allowed to delete it",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "note deleted successfully ",
+      data: { note: deletedNote },
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || "something went wrong ",
+    });
+  }
+};
+
+export const searchNotesController = async (req, res) => {
+  try {
+    const title = req.query.title?.trim() || null;
+    const category = req.query.category?.trim() || null;
+    const keyword = req.query.keyword?.trim() || null;
+    if (!title && !category && !keyword) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "At least one search parameter is required: title, category, or keyword",
+      });
+    }
+    const notes = await searchNotes({
+      userId: req.user.id,
+      title,
+      category,
+      keyword,
+    });
+    return res.status(200).json({
+      success: true,
+      message: "search completed successfully ",
+      data: { notes },
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || "something went wrong ",
     });
   }
 };

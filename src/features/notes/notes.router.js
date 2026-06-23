@@ -5,6 +5,8 @@ import {
  getMyNotesById,
  updateNotesController,
   getMyNotesController,
+  deleteNoteController,
+  searchNotesController,
 } from "./notes.controller.js";
 
 const router = express.Router();
@@ -12,8 +14,11 @@ const router = express.Router();
 router.use(authenticateUser);
 
 router.post("/", createNoteController);
+router.get("/search", searchNotesController);
 router.get("/", getMyNotesController);
 router.get("/:id", getMyNotesById);
 router.put("/:id", updateNotesController);
+router.delete("/:id", deleteNoteController);
+
 
 export default router;

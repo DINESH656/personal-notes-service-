@@ -12,6 +12,7 @@ const Register = () => {
   });
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -24,52 +25,79 @@ const Register = () => {
     e.preventDefault();
     setError("");
 
+    if (!formData.full_name.trim()) {
+      setError("Full name is required");
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      setError("Email is required");
+      return;
+    }
+
+    if (!formData.password.trim()) {
+      setError("Password is required");
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters long");
+      return;
+    }
+
     try {
+      setLoading(true);
       await registerUser(formData);
-      alert("Registration successful");
       navigate("/login");
     } catch (error) {
       setError(error.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="page-container">
-      <h2>Register</h2>
+    <div className="auth-page">
+      <div className="auth-card">
+        <h2>Create Account</h2>
+        <p>Register to manage your notes securely.</p>
 
-      <form className="form-card" onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="full_name"
-          placeholder="Full Name"
-          value={formData.full_name}
-          onChange={handleChange}
-        />
+        <form className="form-card auth-form" onSubmit={handleSubmit}>
+          <input
+            type="text"
+            name="full_name"
+            placeholder="Enter your full name"
+            value={formData.full_name}
+            onChange={handleChange}
+          />
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-        />
+          <input
+            type="email"
+            name="email"
+            placeholder="Enter your email"
+            value={formData.email}
+            onChange={handleChange}
+          />
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-        />
+          <input
+            type="password"
+            name="password"
+            placeholder="Enter your password"
+            value={formData.password}
+            onChange={handleChange}
+          />
 
-        <button type="submit">Register</button>
-      </form>
+          <button type="submit" disabled={loading}>
+            {loading ? "Registering..." : "Register"}
+          </button>
+        </form>
 
-      {error && <p className="error-text">{error}</p>}
+        {error && <p className="error-text">{error}</p>}
 
-      <p>
-        Already have an account? <Link to="/login">Login</Link>
-      </p>
+        <p className="auth-switch">
+          Already have an account? <Link to="/login">Login</Link>
+        </p>
+      </div>
     </div>
   );
 };

@@ -5,65 +5,97 @@ import { createNote } from "./notes.service";
 
 const CreateNote = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    title: '',
-    content: '',
-    category: '',
 
+  const [formData, setFormData] = useState({
+    title: "",
+    content: "",
+    category: "",
   });
-  const [error, setError] = useState('');
+
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
-
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    try {
-      await createNote(formData);
-      navigate('/dashboard');
+    setError("");
+
+    if (!formData.title.trim()) {
+      setError("Title is required");
+      return;
     }
-    catch (error) {
-      setError(error.response?.data?.message || 'failed to create note');
+
+    if (!formData.category.trim()) {
+      setError("Category is required");
+      return;
+    }
+
+    if (!formData.content.trim()) {
+      setError("Content is required");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await createNote(formData);
+      navigate("/dashboard");
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to create note");
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
     <div>
       <Navbar />
+
       <div className="page-container">
-        <h2>CREATE NOTE</h2>
-        <form className="form-card" onSubmit={handleSubmit}>
+        <div className="form-page-header">
+          <h2>Create Note</h2>
+          <p>Add a new note to your personal knowledge base.</p>
+        </div>
+
+        <form className="form-card note-form-card" onSubmit={handleSubmit}>
           <input
-            type='text'
-            name='title'
-            placeholder="Title"
+            type="text"
+            name="title"
+            placeholder="Enter note title"
             value={formData.title}
             onChange={handleChange}
           />
+
           <input
-            type='text'
-            name='category'
-            placeholder="Category"
+            type="text"
+            name="category"
+            placeholder="Enter category (e.g. Frontend, Backend, Database)"
             value={formData.category}
             onChange={handleChange}
           />
+
           <textarea
-            name='content'
-            placeholder="write your note... "
-            rows='8'
+            name="content"
+            placeholder="Write your note content here..."
+            rows="10"
             value={formData.content}
             onChange={handleChange}
           />
 
-          <button type='submit'>CREATE NOTE </button>
+          <button type="submit" disabled={loading}>
+            {loading ? "Creating..." : "Create Note"}
+          </button>
         </form>
-        {error && <p className="error-text"> {error} </p>}
+
+        {error && <p className="error-text">{error}</p>}
       </div>
     </div>
   );
 };
+
 export default CreateNote;

@@ -11,6 +11,7 @@ const Login = () => {
   });
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -23,7 +24,18 @@ const Login = () => {
     e.preventDefault();
     setError("");
 
+    if (!formData.email.trim()) {
+      setError("Email is required");
+      return;
+    }
+
+    if (!formData.password.trim()) {
+      setError("Password is required");
+      return;
+    }
+
     try {
+      setLoading(true);
       const response = await loginUser(formData);
 
       localStorage.setItem("token", response.data.token);
@@ -32,38 +44,45 @@ const Login = () => {
       navigate("/dashboard");
     } catch (error) {
       setError(error.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="page-container">
-      <h2>Login</h2>
+    <div className="auth-page">
+      <div className="auth-card">
+        <h2>Welcome Back</h2>
+        <p>Login to access your personal knowledge base.</p>
 
-      <form className="form-card" onSubmit={handleSubmit}>
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-        />
+        <form className="form-card auth-form" onSubmit={handleSubmit}>
+          <input
+            type="email"
+            name="email"
+            placeholder="Enter your email"
+            value={formData.email}
+            onChange={handleChange}
+          />
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-        />
+          <input
+            type="password"
+            name="password"
+            placeholder="Enter your password"
+            value={formData.password}
+            onChange={handleChange}
+          />
 
-        <button type="submit">Login</button>
-      </form>
+          <button type="submit" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
 
-      {error && <p className="error-text">{error}</p>}
+        {error && <p className="error-text">{error}</p>}
 
-      <p>
-        Don’t have an account? <Link to="/register">Register</Link>
-      </p>
+        <p className="auth-switch">
+          Don’t have an account? <Link to="/register">Register</Link>
+        </p>
+      </div>
     </div>
   );
 };

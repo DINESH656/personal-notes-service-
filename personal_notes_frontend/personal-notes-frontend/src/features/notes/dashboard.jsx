@@ -8,6 +8,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const [notes, setNotes] = useState([]);
+  const [allNotes, setAllNotes] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -27,7 +28,9 @@ const Dashboard = () => {
       setError("");
       setLoading(true);
       const response = await getMyNotes();
-      setNotes(response.data.notes || []);
+      const fetchedNotes = response.data.notes || [];
+      setNotes(fetchedNotes);
+      setAllNotes(fetchedNotes);
     } catch (error) {
       setError(error.response?.data?.message || "Failed to fetch notes");
     } finally {
@@ -102,7 +105,7 @@ const Dashboard = () => {
           <div className="dashboard-summary">
             <div className="summary-card">
               <span>Total Notes</span>
-              <strong>{notes.length}</strong>
+              <strong>{allNotes.length}</strong>
             </div>
 
             <button

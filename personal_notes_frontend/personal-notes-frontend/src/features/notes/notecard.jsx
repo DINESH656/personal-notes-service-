@@ -10,8 +10,22 @@ const NoteCard = ({ note, onDelete, deletingNoteId }) => {
 
   const isDeleting = deletingNoteId === note.note_id;
 
+  const handleOpenNote = () => {
+    navigate(`/notes/${note.note_id}`);
+  };
+
+  const handleEdit = (e) => {
+    e.stopPropagation();
+    navigate(`/notes/edit/${note.note_id}`);
+  };
+
+  const handleDelete = (e) => {
+    e.stopPropagation();
+    onDelete(note.note_id);
+  };
+
   return (
-    <div className="note-card">
+    <div className="note-card clickable-note-card" onClick={handleOpenNote}>
       <div className="note-card-header">
         <h3>{note.title}</h3>
         <span className="category-badge">{note.category}</span>
@@ -25,16 +39,13 @@ const NoteCard = ({ note, onDelete, deletingNoteId }) => {
       </div>
 
       <div className="note-actions">
-        <button
-          className="secondary-btn"
-          onClick={() => navigate(`/notes/edit/${note.note_id}`)}
-        >
+        <button className="secondary-btn" onClick={handleEdit}>
           Edit
         </button>
 
         <button
           className="danger-btn"
-          onClick={() => onDelete(note.note_id)}
+          onClick={handleDelete}
           disabled={isDeleting}
         >
           {isDeleting ? "Deleting..." : "Delete"}
@@ -44,4 +55,4 @@ const NoteCard = ({ note, onDelete, deletingNoteId }) => {
   );
 };
 
-export default NoteCard;
+export default NoteCard;    

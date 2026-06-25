@@ -69,9 +69,9 @@ export const getMyNotesController = async (req, res) => {
 
 export const getMyNotesById = async (req, res) => {
   try {
-    const noteId = req.params.id;
+    const {id} = req.params
     const note = await getNoteById({
-      noteId,
+      noteId : id,
       userId: req.user.id,
     });
 

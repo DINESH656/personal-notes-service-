@@ -53,6 +53,7 @@ const Dashboard = () => {
       setDeletingNoteId(noteId);
       await deleteNote(noteId);
       setNotes((prev) => prev.filter((note) => note.note_id !== noteId));
+      setAllNotes((prev) => prev.filter((note) => note.note_id !== noteId));
     } catch (error) {
       alert(error.response?.data?.message || "Failed to delete note");
     } finally {
@@ -162,7 +163,9 @@ const Dashboard = () => {
 
         <div className="notes-section-header">
           <h2>My Notes</h2>
-          <p>{notes.length} note(s) available</p>
+          <p>{notes.length} note(s) found
+            {notes.length !== allNotes.length ? ` out of ${allNotes.length}` : ''}
+          </p>
         </div>
 
         {loading ? (

@@ -5,6 +5,12 @@ const formatDate = (dateValue) => {
   return new Date(dateValue).toLocaleString();
 };
 
+const truncateContent = (content , maxLength = 180) =>{
+  if(!content) return "";
+  if(content.length<=maxLength) return content ;
+  return `${content.slice(0,maxLength)}...More`;
+}
+
 const NoteCard = ({ note, onDelete, deletingNoteId }) => {
   const navigate = useNavigate();
 
@@ -31,7 +37,7 @@ const NoteCard = ({ note, onDelete, deletingNoteId }) => {
         <span className="category-badge">{note.category}</span>
       </div>
 
-      <p className="note-content">{note.content}</p>
+      <p className="note-content-preview">{truncateContent(note.content , 180)}</p>
 
       <div className="note-meta">
         <span>Created: {formatDate(note.created_at)}</span>

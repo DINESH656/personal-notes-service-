@@ -30,6 +30,6 @@ export const searchNotes = async (params) => {
   if (params.keyword) {
     query.append("keyword", params.keyword);
   }
-  const response = await api.get(`/notes/search?${query.toString()}`);
+  const response = await api.get(`/notes?${query.toString()}`);
   return response.data;
 };

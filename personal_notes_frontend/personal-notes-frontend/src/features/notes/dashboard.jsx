@@ -96,7 +96,9 @@ const Dashboard = () => {
       <div className="page-container">
         <div className="dashboard-hero">
           <div>
-            <h1>{user?.name ? `Welcome back, ${user.name}` : "My Notes"}</h1>
+            <h1>
+              {user?.full_name ? `Welcome back, ${user.full_name}` : "My Notes"}
+            </h1>
             <p>
               Organize your knowledge, search your notes, and keep everything in
               one place.

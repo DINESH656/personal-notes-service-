@@ -114,7 +114,7 @@ export const getMyNotesController = async (req, res) => {
 
 export const getMyNotesById = async (req, res) => {
   try {
-    const { noteId } = req.params.id;
+    const noteId = req.params.id;
     const note = await getNoteById({
       noteId,
       userId: req.user.id,

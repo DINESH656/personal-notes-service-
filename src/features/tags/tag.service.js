@@ -1,5 +1,5 @@
-import { use } from "react";
 import { query, getClient } from "../../config/db.js";
+import { logActivity } from "../activities/activities.service.js";
 
 export const createTag = async ({ userId, tagName }) => {
   const result = await query(
@@ -33,7 +33,7 @@ export const updateTag = async ({ tagId, userId, tagName }) => {
   const result = await query(
     `UPDATE tags
         SET tag_name = $1 
-        WHERE tag_id = $2 ,
+        WHERE tag_id = $2
         AND user_id = $3
         RETURNING 
         tag_id ,
@@ -53,7 +53,7 @@ export const updateTag = async ({ tagId, userId, tagName }) => {
 export const deleteTag = async ({ tagId, userId }) => {
   const result = await query(
     `DELETE FROM tags 
-        WHERE tag_id = $1,
+        WHERE tag_id = $1
         AND user_id = $2
         RETURNING 
         tag_id ,
@@ -75,7 +75,7 @@ export const assignTagsToNote = async ({ noteId, userId, tagIds }) => {
   try {
     await client.query("BEGIN");
 
-    const noteResult = await query(
+    const noteResult = await client.query(
       `SELECT note_id 
         FROM notes
         WHERE note_id = $1
@@ -119,19 +119,13 @@ export const assignTagsToNote = async ({ noteId, userId, tagIds }) => {
         [noteId, tagId],
       );
     }
-    await client.query(
-      `INSERT INTO note_activities(
-        note_id ,
-        user_id,
-        action_type,
-        action_description ) 
-        VALUES (
-        $1,
-        $2,
-        'TAG ADDED',
-        'Tags updated')`,
-      [noteId, userId],
-    );
+    await logActivity({
+      client,
+      noteId,
+      userId,
+      actionType: "TAG_ADD",
+      actionDescription: "Updated note tags",
+    });
     await client.query("COMMIT");
     return await getTagsByNote({
       noteId,

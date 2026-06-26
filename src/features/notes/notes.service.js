@@ -1,4 +1,5 @@
 import { query } from "../../config/db.js";
+import { logActivity } from "../activities/activities.service.js";
 const NOTE_SELECT_FIELDS = `
 note_id ,
 user_id ,
@@ -22,11 +23,11 @@ export const createNote = async ({ userId, title, content, category }) => {
     [userId, title.trim(), content.trim(), category.trim()],
   );
   const note = result.rows[0];
-  await createNoteActivity({
+  await logActivity({
     noteId: note.note_id,
     userId,
     actionType: "CREATE",
-    actionDescription: `Created note '${note.title}' `,
+    actionDescription: `Created note "${note.title}"`,
   });
   return note;
 };
@@ -106,7 +107,7 @@ export const getNoteById = async ({ noteId, userId }) => {
     throw error;
   }
   const note = result.rows[0];
-  await createNoteActivity({
+  await logActivity({
     noteId,
     userId,
     actionType: "VIEW",
@@ -128,6 +129,7 @@ export const updateNotes = async ({
     category = $3,
     updated_at = CURRENT_TIMESTAMP 
     WHERE note_id = $4 AND user_id = $5
+    AND is_deleted = FALSE
     RETURNING ${NOTE_SELECT_FIELDS} `,
     [title.trim(), content.trim(), category.trim(), noteId, userId],
   );
@@ -137,7 +139,7 @@ export const updateNotes = async ({
     throw error;
   }
   const note = result.rows[0];
-  await createNoteActivity({
+  await logActivity({
     noteId,
     userId,
     actionType: "EDIT",
@@ -150,7 +152,7 @@ export const SoftDeleteNotes = async ({ noteId, userId }) => {
     `UPDATE notes
     SET is_deleted = TRUE ,
     deleted_at = CURRENT_TIMESTAMP ,
-    updated_at = CURRENT_TIMESTAMP,
+    updated_at = CURRENT_TIMESTAMP
     WHERE note_id = $1
     AND user_id = $2 
     AND is_deleted = FALSE
@@ -164,7 +166,7 @@ export const SoftDeleteNotes = async ({ noteId, userId }) => {
   }
 
   const note = result.rows[0];
-  await createNoteActivity({
+  await logActivity({
     noteId,
     userId,
     actionType: "DELETE",

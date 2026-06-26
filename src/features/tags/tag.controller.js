@@ -144,6 +144,7 @@ export const getTagsByNoteController = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "tags fetched successfully",
+      data: { tags },
     });
   } catch (error) {
     return res.status(error.statusCode || 500).json({

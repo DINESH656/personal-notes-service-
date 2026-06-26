@@ -16,7 +16,9 @@ const Navbar = () => {
       <div className="navbar-left">
         <h2 className="brand-title">PERSONAL KNOWLEDGE BASE</h2>
         <p className="brand-subtitle">
-          {user?.name ? `Welcome, ${user.name}` : "Manage your notes smarter"}
+          {user?.full_name
+            ? `Welcome, ${user.full_name}`
+            : "Manage your notes smarter"}
         </p>
       </div>
 

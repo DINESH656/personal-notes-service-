@@ -13,7 +13,8 @@ const router = express.Router();
 router.use(authenticateUser);
 
 router.post("/", createTagController);
-(router.get("/", getTagsController), router.put("/:id", updateTagController));
+router.get("/", getTagsController);
+router.put("/:id", updateTagController);
 router.delete("/:id", deleteTagController);
 
 router.put("/note/:noteId", assignTagsToNoteController);

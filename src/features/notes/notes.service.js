@@ -13,19 +13,6 @@ const SORT_OPTIONS = {
   title_asc: "title ASC",
   title_desc: "title DESC",
 };
-export const createNoteActivity = async ({
-  noteId,
-  userId,
-  actionType,
-  actionDescription,
-}) => {
-  await query(
-    `INSERT INTO note_activities
-     (note_id , user_id , action_type , action_description )
-      VALUES($1,$2,$3,$4)`,
-    [noteId, userId, actionType, actionDescription],
-  );
-};
 
 export const createNote = async ({ userId, title, content, category }) => {
   const result = await query(

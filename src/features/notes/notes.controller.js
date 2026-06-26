@@ -1,11 +1,12 @@
 import {
   createNote,
-  getNotesByUser,
   getNoteById,
   updateNotes,
-  deleteNotes,
-  searchNotes,
+  SoftDeleteNotes,
+  getMyNotes,
 } from "./notes.service.js";
+
+const ALLOWED_SORT_OPTIONS = ["newest", "oldest", "title_asc", "title_desc"];
 
 export const createNoteController = async (req, res) => {
   try {
@@ -49,29 +50,73 @@ export const createNoteController = async (req, res) => {
     });
   }
 };
-
 export const getMyNotesController = async (req, res) => {
   try {
-    const notes = await getNotesByUser(req.user.id);
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const sortBy = req.query.sortBy || "newest";
+    const title = req.query.title?.trim() || null;
+    const category = req.query.category?.trim() || null;
+    const keyword = req.query.keyword?.trim() || null;
 
+    if (page < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "page must be greater than or equal to 1 ",
+      });
+    }
+
+    if (limit < 1 || limit > 100) {
+      return res.status(400).json({
+        success: false,
+        message: "limit must be between 1 and 100",
+      });
+    }
+
+    if (!ALLOWED_SORT_OPTIONS.includes(sortBy)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid sortBy value , Allowed values : newest , oldest , title_asc , title_desc ",
+      });
+    }
+
+    const result = await getMyNotes({
+      userId: req.user.id,
+      page,
+      limit,
+      sortBy,
+      title,
+      category,
+      keyword,
+    });
     return res.status(200).json({
       success: true,
-      message: "notes fetched successfully ",
-      data: { notes },
+      message: "notes fetched successfully",
+      data: {
+        notes: result.notes,
+        pagination: result.pagination,
+        filters: {
+          title,
+          category,
+          keyword,
+          sortBy,
+        },
+      },
     });
   } catch (error) {
     return res.status(error.statusCode || 500).json({
       success: false,
-      message: error.message || "something went wrong ",
+      Message: error.message || "something went wrong",
     });
   }
 };
 
 export const getMyNotesById = async (req, res) => {
   try {
-    const {id} = req.params
+    const { noteId } = req.params.id;
     const note = await getNoteById({
-      noteId : id,
+      noteId,
       userId: req.user.id,
     });
 
@@ -145,7 +190,7 @@ export const updateNotesController = async (req, res) => {
 export const deleteNoteController = async (req, res) => {
   try {
     const noteId = req.params.id;
-    const deletedNote = await deleteNotes({
+    const deletedNote = await SoftDeleteNotes({
       noteId,
       userId: req.user.id,
     });
@@ -159,37 +204,6 @@ export const deleteNoteController = async (req, res) => {
       success: true,
       message: "note deleted successfully ",
       data: { note: deletedNote },
-    });
-  } catch (error) {
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.message || "something went wrong ",
-    });
-  }
-};
-
-export const searchNotesController = async (req, res) => {
-  try {
-    const title = req.query.title?.trim() || null;
-    const category = req.query.category?.trim() || null;
-    const keyword = req.query.keyword?.trim() || null;
-    if (!title && !category && !keyword) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "At least one search parameter is required: title, category, or keyword",
-      });
-    }
-    const notes = await searchNotes({
-      userId: req.user.id,
-      title,
-      category,
-      keyword,
-    });
-    return res.status(200).json({
-      success: true,
-      message: "search completed successfully ",
-      data: { notes },
     });
   } catch (error) {
     return res.status(error.statusCode || 500).json({

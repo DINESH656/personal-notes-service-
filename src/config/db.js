@@ -4,30 +4,25 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const { Pool } = pg;
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
 });
 
-pool.on("connect", () => {
-  console.log("Database connected");
-});
+export const query = (text, params) => {
+  return pool.query(text, params);
+};
 
-pool.on("error", (error) => {
-  console.error("Database error:", error.message);
-});
-
-export const query = (text, params) => pool.query(text, params);
+// ⭐ NEW
+export const getClient = async () => {
+  return await pool.connect();
+};
 
 export const checkConnection = async () => {
-  if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL is not configured");
-  }
+  const client = await getClient();
 
-  const client = await pool.connect();
   try {
-    await client.query("SELECT 1");
-    console.log("Database connection verified");
+    console.log("Database connected successfully");
   } finally {
     client.release();
   }

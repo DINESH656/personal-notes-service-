@@ -1,5 +1,5 @@
 import { use } from "react";
-import { query } from "../../config/db.js";
+import { query, getClient } from "../../config/db.js";
 
 export const createTag = async ({ userId, tagName }) => {
   const result = await query(
@@ -71,36 +71,78 @@ export const deleteTag = async ({ tagId, userId }) => {
 };
 
 export const assignTagsToNote = async ({ noteId, userId, tagIds }) => {
-  const noteResult = await query(
-    `SELECT note_id 
+  const client = await getClient();
+  try {
+    await client.query("BEGIN");
+
+    const noteResult = await query(
+      `SELECT note_id 
         FROM notes
         WHERE note_id = $1
         AND user_id = $2 
         AND is_deleted = FALSE`,
-    [noteId, userId],
-  );
-  if (noteResult.rows.length === 0) {
-    const error = new Error("note not found");
-    error.statusCode = 404;
-    throw error;
-  }
-  await query(
-    `DELETE note_tags 
-    WHERE note_id = $1`,
-    [noteId],
-  );
-  for (const tagId of tagIds) {
-    await query(
-      `INSERT INTO note_tags
-        (note_id , tag_id )
-        VALUES($1,$2)`,
-      [noteId, tagId],
+      [noteId, userId],
     );
+    if (noteResult.rows.length === 0) {
+      const error = new Error("note not found");
+      error.statusCode = 404;
+      throw error;
+    }
+    const uniqueTagIds = [...new Set(tagIds)];
+    if (uniqueTagIds.length > 0) {
+      const verifyTags = await client.query(
+        `SELECT tag_id 
+        from tags 
+        WHERE user_id = $1 
+        AND tag_id = ANY($2 :: VARCHAR[])`,
+        [userId, uniqueTagIds],
+      );
+      if (verifyTags.rows.length !== uniqueTagIds.length) {
+        const error = new Error(
+          "one or more tags do not belong to this user. ",
+        );
+        error.statusCode = 400;
+        throw error;
+      }
+    }
+    await client.query(
+      `DELETE FROM note_tags
+        WHERE note_id = $1`,
+      [noteId],
+    );
+    for (const tagId of uniqueTagIds) {
+      await client.query(
+        `INSERT INTO note_tags 
+            ( note_id , tag_id )
+            VALUES (
+            $1 , $2)`,
+        [noteId, tagId],
+      );
+    }
+    await client.query(
+      `INSERT INTO note_activities(
+        note_id ,
+        user_id,
+        action_type,
+        action_description ) 
+        VALUES (
+        $1,
+        $2,
+        'TAG ADDED',
+        'Tags updated')`,
+      [noteId, userId],
+    );
+    await client.query("COMMIT");
+    return await getTagsByNote({
+      noteId,
+      userId,
+    });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
   }
-  return await getTagByUser({
-    noteId,
-    userId,
-  });
 };
 export const getTagsByNote = async ({ noteId, userId }) => {
   const result = await query(

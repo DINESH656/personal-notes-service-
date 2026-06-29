@@ -6,6 +6,8 @@ import {
   updateNotesController,
   getMyNotesController,
   deleteNoteController,
+  getTrashController,
+  restoreNoteController,
 } from "./notes.controller.js";
 
 const router = express.Router();
@@ -17,5 +19,7 @@ router.get("/", getMyNotesController);
 router.get("/:id", getMyNotesById);
 router.put("/:id", updateNotesController);
 router.delete("/:id", deleteNoteController);
+router.get("/trash", getTrashController);
+router.patch("/:id/restore", restoreNoteController);
 
 export default router;

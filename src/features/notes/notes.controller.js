@@ -4,6 +4,7 @@ import {
   updateNotes,
   SoftDeleteNotes,
   getMyNotes,
+  restoreNote,
 } from "./notes.service.js";
 
 const ALLOWED_SORT_OPTIONS = ["newest", "oldest", "title_asc", "title_desc"];
@@ -89,6 +90,7 @@ export const getMyNotesController = async (req, res) => {
       title,
       category,
       keyword,
+      isDeleted: false,
     });
     return res.status(200).json({
       success: true,
@@ -209,6 +211,77 @@ export const deleteNoteController = async (req, res) => {
     return res.status(error.statusCode || 500).json({
       success: false,
       message: error.message || "something went wrong ",
+    });
+  }
+};
+
+export const restoreNoteController = async (req, res) => {
+  try {
+    const note = await restoreNote({
+      noteId: req.params.id,
+      userId: req.user.id,
+    });
+    return res.status(200).json({
+      success: true,
+      message: "Note restored successfully",
+      data: { note },
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || "something went wrong ",
+    });
+  }
+};
+export const getTrashController = async (req, res) => {
+  try {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const sortBy = req.query.sortBy || "newest";
+    const title = req.query.title?.trim() || null;
+    const category = req.query.category?.trim() || null;
+    const keyword = req.query.keyword?.trim() || null;
+    if (page < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "page must be greater than or equal to 1",
+      });
+    }
+    if (limit < 1 || limit > 100) {
+      return res.status(400).json({
+        success: false,
+        message: "limit must be between 1 to 100 ",
+      });
+    }
+    if (!ALLOWED_SORT_OPTIONS.includes(sortBy)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "invalid sortBy value. allowed values :newest, oldest, title_asc, title_desc",
+      });
+    }
+    const result = await getMyNotes({
+      userId: req.user.id,
+      page,
+      limit,
+      sortBy,
+      title,
+      category,
+      keyword,
+      isDeleted: true,
+    });
+    return res.status(200).json({
+      success: true,
+      message: "trash feteched successfully ",
+      data: {
+        notes: result.notes,
+        pagination: result.pagination,
+      },
+    });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message,
     });
   }
 };

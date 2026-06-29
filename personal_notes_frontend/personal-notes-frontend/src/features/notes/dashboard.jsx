@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/NavBar";
 import NoteCard from "./notecard";
 import { getNotes, deleteNote, } from "./notes.service";
 import SearchBar from "../../components/searchBar";
 import Pagination from "../../components/Pagination";
+import Loader from "../../components/loader";
+import EmptyState from "../../components/EmptyState";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -33,7 +35,7 @@ const Dashboard = () => {
   const storedUser = localStorage.getItem("user");
   const user = storedUser ? JSON.parse(storedUser) : null;
 
-  const loadNotes = async (currentFilters = filters) => {
+  const loadNotes = useCallback(async (currentFilters) => {
     try {
       setLoading(true);
       setError('');
@@ -41,17 +43,26 @@ const Dashboard = () => {
       // `getNotes` returns `response.data.data` from the API service,
       // so the value returned by the service is the object with `notes` and `pagination`.
       setNotes(response.notes || []);
-      setPagination(response.pagination || pagination);
+      setPagination(
+        response.pagination ?? {
+          total: 0,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        }
+      );
     } catch (error) {
       setError(error.response?.data?.message || 'failed to load notes');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadNotes(filters);
-  }, [filters]);
+  }, [filters, loadNotes]);
 
   const handleDelete = async (noteId) => {
     const confirmed = window.confirm(
@@ -64,32 +75,33 @@ const Dashboard = () => {
       setDeletingNoteId(noteId);
       await deleteNote(noteId);
       await loadNotes(filters);
-      alert(error.response?.data?.message || "Failed to delete note");
-    } finally {
+
+    } catch (error) {
+      alert(
+        error.response?.data?.message || 'failed to delete Note '
+      )
+    }
+    finally {
       setDeletingNoteId(null);
     }
   };
 
-  const handleSearch = async () => {
-    const updatedFilters = {
-      ...filters,
+  const handleSearch = () => {
+    setFilters(prev => ({
+      ...prev,
       page: 1,
-    };
-    setFilters(updatedFilters);
-    loadNotes(updatedFilters);
+    }));
   };
 
-  const handleReset = async () => {
-    const resetFilters = {
+  const handleReset = () => {
+    setFilters({
       page: 1,
       limit: 10,
-      sortBy: 'newest',
-      title: '',
-      category: '',
-      keyword: '',
-    };
-    setFilters(resetFilters);
-    loadNotes(resetFilters);
+      sortBy: "newest",
+      title: "",
+      category: "",
+      keyword: "",
+    });
   };
 
   return (
@@ -146,10 +158,10 @@ const Dashboard = () => {
         />
 
         {loading ? (
-          <div className="empty-state">
-            <h3>Loading notes...</h3>
-            <p>Please wait while we fetch your notes.</p>
-          </div>
+          <Loader
+            title="Loading Notes..."
+            message="please wait while we fetch your notes."
+          />
         ) : notes.length > 0 ? (
           <div className="notes-grid">
             {notes.map((note) => (
@@ -162,19 +174,12 @@ const Dashboard = () => {
             ))}
           </div>
         ) : (
-          <div className="empty-state">
-            <h3>No notes found</h3>
-            <p>
-              You don’t have any notes yet. Create your first note to get
-              started.
-            </p>
-            <button
-              className="primary-btn"
-              onClick={() => navigate("/notes/create")}
-            >
-              Create First Note
-            </button>
-          </div>
+          <EmptyState
+            title='No Notes Found'
+            description='Create your first note to start building your knowledge base. '
+            buttonText='Create First Note'
+            onButtonClick={() => navigate('/notes/create')}
+          />
         )}
       </div>
     </div>

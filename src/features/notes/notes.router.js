@@ -16,10 +16,10 @@ router.use(authenticateUser);
 
 router.post("/", createNoteController);
 router.get("/", getMyNotesController);
+router.get("/trash", getTrashController);
 router.get("/:id", getMyNotesById);
 router.put("/:id", updateNotesController);
 router.delete("/:id", deleteNoteController);
-router.get("/trash", getTrashController);
 router.patch("/:id/restore", restoreNoteController);
 
 export default router;

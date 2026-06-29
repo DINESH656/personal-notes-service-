@@ -22,8 +22,8 @@ const ViewNote = () => {
         setLoading(true);
         setError("");
 
-        const response = await getNoteById(id);
-        setNote(response.data.note);
+        const note = await getNoteById(id);
+        setNote(note);
       } catch (error) {
         setError(error.response?.data?.message || "Failed to load note");
       } finally {

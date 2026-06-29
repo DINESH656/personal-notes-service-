@@ -57,10 +57,10 @@ export const getMyNotes = async ({
     WHERE user_id = $1 
     AND is_deleted = $2
     AND ($3 :: text IS NULL OR title ILIKE '%' || $3 || '%')
-    AND ($4 :: text IS NULL OR category ILIKE '%' || $$ || '%')
-    AND ($5 text IS NULL 
+    AND ($4 :: text IS NULL OR category ILIKE '%' || $4 || '%')
+    AND ($5  :: text IS NULL 
     OR title ILIKE '%' || $5 || '%'
-    OR category ILIKE '%' || $5 || '%' )`,
+    OR content ILIKE '%' || $5 || '%' )`,
     [userId, isDeleted, normalizedTitle, normalizedCategory, normalizedKeyword],
   );
   const total = countResult.rows[0].total;
@@ -192,8 +192,8 @@ export const restoreNote = async ({ noteId, userId }) => {
       deleted_at = NULL ,
       updated_at = CURRENT_TIMESTAMP
       WHERE 
-      note_id = $1 ,
-      AND user_id = $2 ,
+      note_id = $1 
+      AND user_id = $2 
       AND is_deleted = TRUE
       RETURNING *`,
       [noteId, userId],

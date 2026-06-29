@@ -3,44 +3,47 @@ import { query } from "../../config/db.js";
 export const getDashboardStats = async ({ userId }) => {
   const result = await query(
     `SELECT  
-        ( COUNT(*) FROM notes
-        WHERE userId = $1
-        )AS total_notes
-        (
-        SELECT COUNT(*)
-        FROM notes 
-        WHERE userId = $1
-        AND is_deleted = FALSE 
-        ) AS active_notes
-         (
-        SELECT COUNT(*)
-        FROM NOTES
-        WHERE userId = $1
-        AND is_deleted = TRUE
-        ) AS deleted_notes
-         (SELECT COUNT(*)
-         FROM tags 
-         WHERE user_id = $1
-         ) AS total_tags
-          (
-         SELECT COUNT(*)
-         FROM note_activities
-         WHERE user_id = $1
-          ) AS total_activities
-           (
-          SELECT COUNT(DISTINCT category)
-          FROM notes 
-        WHERE user_id = $1
-        AND is_deleted = FALSE
-          )AS total_catgories
-          (
-          SELECT COUNT(*)
-          FROM notes
-          WHERE user_id = $1
-          AND updated_at >= CURRENT_DATE
-          AND is_deleted = FALSE
-          )AS recently updated
-           (
+    (
+      SELECT COUNT(*)::int
+      FROM notes
+      WHERE user_id = $1
+    ) AS total_notes,
+    (
+      SELECT COUNT(*)::int
+      FROM notes 
+      WHERE user_id = $1
+      AND is_deleted = FALSE 
+    ) AS active_notes,
+    (
+      SELECT COUNT(*)::int
+      FROM notes
+      WHERE user_id = $1
+      AND is_deleted = TRUE
+    ) AS deleted_notes,
+    (
+      SELECT COUNT(*)::int
+      FROM tags 
+      WHERE user_id = $1
+    ) AS total_tags,
+    (
+      SELECT COUNT(*)::int
+      FROM note_activities
+      WHERE user_id = $1
+    ) AS total_activities,
+    (
+      SELECT COUNT(DISTINCT category)::int
+      FROM notes 
+      WHERE user_id = $1
+      AND is_deleted = FALSE
+    ) AS total_categories,
+    (
+      SELECT COUNT(*)::int
+      FROM notes
+      WHERE user_id = $1
+      AND updated_at >= CURRENT_DATE
+      AND is_deleted = FALSE
+    ) AS recently_updated,
+    (
       SELECT category
       FROM notes
       WHERE user_id = $1

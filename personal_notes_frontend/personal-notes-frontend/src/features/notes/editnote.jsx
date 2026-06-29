@@ -23,8 +23,7 @@ const EditNote = () => {
         setError("");
         setPageLoading(true);
 
-        const response = await getNoteById(id);
-        const note = response.data.note;
+        const note = await getNoteById(id);
 
         setFormData({
           title: note.title,

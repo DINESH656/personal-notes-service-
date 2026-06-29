@@ -333,7 +333,6 @@ button:disabled {
   flex-grow: 1;
 }
 
-
 .note-meta {
   display: flex;
   flex-direction: column;
@@ -371,7 +370,9 @@ button:disabled {
   padding: 28px;
   border-radius: 20px;
   box-shadow: 0 18px 48px rgba(255, 183, 77, 0.12);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 .note-view-card:hover {
   transform: translateY(-4px);
@@ -432,8 +433,14 @@ button:disabled {
 
 /* small optimistic accent animation */
 @keyframes floatIn {
-  from { opacity: 0; transform: translateY(10px) scale(0.99); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 .note-view-card {
   animation: floatIn 260ms ease;
@@ -446,7 +453,9 @@ button:disabled {
   padding: 28px;
   border-radius: 20px;
   box-shadow: 0 18px 48px rgba(255, 183, 77, 0.12);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
   animation: floatIn 260ms ease;
 }
 .note-form-card:hover {
@@ -513,15 +522,24 @@ button:disabled {
   }
 }
 
-
-
 .clickable-note-card {
   cursor: pointer;
-
-  
 }
 
 .clickable-note-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
+}
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  margin-top: 32px;
+}
+
+.page-info {
+  font-size: 15px;
+  font-weight: 600;
+  color: #334155;
 }

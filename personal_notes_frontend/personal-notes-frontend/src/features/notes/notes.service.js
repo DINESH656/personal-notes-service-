@@ -1,8 +1,4 @@
 import api from "../../app/axios";
-export const getMyNotes = async () => {
-  const response = await api.get("/notes");
-  return response.data;
-};
 export const getNoteById = async (noteId) => {
   const response = await api.get(`/notes/${noteId}`);
   return response.data;
@@ -19,17 +15,47 @@ export const deleteNote = async (noteId) => {
   const response = await api.delete(`/notes/${noteId}`);
   return response.data;
 };
-export const searchNotes = async (params) => {
-  const query = new URLSearchParams();
-  if (params.title) {
-    query.append("title", params.title);
-  }
-  if (params.category) {
-    query.append("category", params.category);
-  }
-  if (params.keyword) {
-    query.append("keyword", params.keyword);
-  }
-  const response = await api.get(`/notes?${query.toString()}`);
+export const getNotes = async ({
+  page = 1,
+  limit = 10,
+  sortBy = "newest",
+  title = "",
+  category = "",
+  keyword = "",
+}) => {
+  const response = await api.get("/notes", {
+    params: {
+      page,
+      limit,
+      sortBy,
+      title,
+      category,
+      keyword,
+    },
+  });
+  return response.data.data;
+};
+export const restoredNote = async (noteId) => {
+  const response = await api.patch(`/notes/${noteId}/restore`);
+  return response.data;
+};
+export const getTrashNotes = async ({
+  page = 1,
+  limit = 10,
+  sortBy = "newest",
+  title = "",
+  category = "",
+  keyword = "",
+}) => {
+  const response = await api.get("/notes/trash", {
+    params: {
+      page,
+      limit,
+      sortBy,
+      title,
+      category,
+      keyword,
+    },
+  });
   return response.data;
 };

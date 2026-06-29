@@ -2,45 +2,56 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/NavBar";
 import NoteCard from "./notecard";
-import { getMyNotes, deleteNote, searchNotes } from "./notes.service";
+import { getNotes, deleteNote, } from "./notes.service";
+import SearchBar from "../../components/searchBar";
+import Pagination from "../../components/Pagination";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-
   const [notes, setNotes] = useState([]);
-  const [allNotes, setAllNotes] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [searchLoading, setSearchLoading] = useState(false);
   const [deletingNoteId, setDeletingNoteId] = useState(null);
-
-  const [search, setSearch] = useState({
-    title: "",
-    category: "",
-    keyword: "",
+  const [pagination, setPagination] = useState({
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 1,
+    hasNextPage: false,
+    hasPreviousPage: false,
   });
+  const [filters, setFilters] = useState({
+    page: 1,
+    limit: 10,
+    sortBy: 'newest',
+    title: '',
+    category: '',
+    keyword: '',
+  });
+
 
   const storedUser = localStorage.getItem("user");
   const user = storedUser ? JSON.parse(storedUser) : null;
 
-  const fetchNotes = async () => {
+  const loadNotes = async (currentFilters = filters) => {
     try {
-      setError("");
       setLoading(true);
-      const response = await getMyNotes();
-      const fetchedNotes = response.data.notes || [];
-      setNotes(fetchedNotes);
-      setAllNotes(fetchedNotes);
+      setError('');
+      const response = await getNotes(currentFilters);
+      // `getNotes` returns `response.data.data` from the API service,
+      // so the value returned by the service is the object with `notes` and `pagination`.
+      setNotes(response.notes || []);
+      setPagination(response.pagination || pagination);
     } catch (error) {
-      setError(error.response?.data?.message || "Failed to fetch notes");
+      setError(error.response?.data?.message || 'failed to load notes');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchNotes();
-  }, []);
+    loadNotes(filters);
+  }, [filters]);
 
   const handleDelete = async (noteId) => {
     const confirmed = window.confirm(
@@ -52,9 +63,7 @@ const Dashboard = () => {
     try {
       setDeletingNoteId(noteId);
       await deleteNote(noteId);
-      setNotes((prev) => prev.filter((note) => note.note_id !== noteId));
-      setAllNotes((prev) => prev.filter((note) => note.note_id !== noteId));
-    } catch (error) {
+      await loadNotes(filters);
       alert(error.response?.data?.message || "Failed to delete note");
     } finally {
       setDeletingNoteId(null);
@@ -62,31 +71,25 @@ const Dashboard = () => {
   };
 
   const handleSearch = async () => {
-    try {
-      setError("");
-      setSearchLoading(true);
-
-      if (!search.title && !search.category && !search.keyword) {
-        await fetchNotes();
-        return;
-      }
-
-      const response = await searchNotes(search);
-      setNotes(response.data.notes || []);
-    } catch (error) {
-      setError(error.response?.data?.message || "Search failed");
-    } finally {
-      setSearchLoading(false);
-    }
+    const updatedFilters = {
+      ...filters,
+      page: 1,
+    };
+    setFilters(updatedFilters);
+    loadNotes(updatedFilters);
   };
 
   const handleReset = async () => {
-    setSearch({
-      title: "",
-      category: "",
-      keyword: "",
-    });
-    await fetchNotes();
+    const resetFilters = {
+      page: 1,
+      limit: 10,
+      sortBy: 'newest',
+      title: '',
+      category: '',
+      keyword: '',
+    };
+    setFilters(resetFilters);
+    loadNotes(resetFilters);
   };
 
   return (
@@ -108,7 +111,7 @@ const Dashboard = () => {
           <div className="dashboard-summary">
             <div className="summary-card">
               <span>Total Notes</span>
-              <strong>{allNotes.length}</strong>
+              <strong>{pagination.total}</strong>
             </div>
 
             <button
@@ -120,55 +123,27 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="search-card">
-          <h3>Search Notes</h3>
-
-          <div className="search-bar">
-            <input
-              type="text"
-              placeholder="Search by title"
-              value={search.title}
-              onChange={(e) =>
-                setSearch((prev) => ({ ...prev, title: e.target.value }))
-              }
-            />
-
-            <input
-              type="text"
-              placeholder="Search by category"
-              value={search.category}
-              onChange={(e) =>
-                setSearch((prev) => ({ ...prev, category: e.target.value }))
-              }
-            />
-
-            <input
-              type="text"
-              placeholder="Search by keyword"
-              value={search.keyword}
-              onChange={(e) =>
-                setSearch((prev) => ({ ...prev, keyword: e.target.value }))
-              }
-            />
-
-            <button onClick={handleSearch} disabled={searchLoading}>
-              {searchLoading ? "Searching..." : "Search"}
-            </button>
-
-            <button className="secondary-btn" onClick={handleReset}>
-              Reset
-            </button>
-          </div>
-        </div>
+        <SearchBar
+          filters={filters}
+          setFilters={setFilters}
+          onSearch={handleSearch}
+          onReset={handleReset}
+          loading={loading}
+        />
 
         {error && <p className="error-text">{error}</p>}
 
         <div className="notes-section-header">
           <h2>My Notes</h2>
-          <p>{notes.length} note(s) found
-            {notes.length !== allNotes.length ? ` out of ${allNotes.length}` : ''}
+          <p>
+            {pagination.total} note(s) available
           </p>
         </div>
+        <Pagination
+          pagination={pagination}
+          filters={filters}
+          setFilters={setFilters}
+        />
 
         {loading ? (
           <div className="empty-state">

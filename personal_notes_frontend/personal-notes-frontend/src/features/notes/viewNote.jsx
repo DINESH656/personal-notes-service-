@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { FiActivity, FiArrowLeft, FiEdit3, FiTag } from "react-icons/fi";
 import Navbar from "../../components/NavBar";
 import { getNoteById } from "./notes.service";
+import { getActivities } from "../activities/activities.service";
 
 const formatDate = (dateValue) => {
   if (!dateValue) return "N/A";
@@ -13,6 +15,7 @@ const ViewNote = () => {
   const navigate = useNavigate();
 
   const [note, setNote] = useState(null);
+  const [activities, setActivities] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -22,8 +25,12 @@ const ViewNote = () => {
         setLoading(true);
         setError("");
 
-        const note = await getNoteById(id);
+        const [note, activityResponse] = await Promise.all([
+          getNoteById(id),
+          getActivities({ noteId: id, limit: 10, sortBy: "newest" }),
+        ]);
         setNote(note);
+        setActivities(activityResponse.activities || []);
       } catch (error) {
         setError(error.response?.data?.message || "Failed to load note");
       } finally {
@@ -68,6 +75,7 @@ const ViewNote = () => {
                   className="secondary-btn"
                   onClick={() => navigate("/dashboard")}
                 >
+                  <FiArrowLeft />
                   Back
                 </button>
 
@@ -75,6 +83,7 @@ const ViewNote = () => {
                   className="primary-btn"
                   onClick={() => navigate(`/notes/edit/${note.note_id}`)}
                 >
+                  <FiEdit3 />
                   Edit Note
                 </button>
               </div>
@@ -89,9 +98,40 @@ const ViewNote = () => {
               </p>
             </div>
 
+            {note.tags?.length > 0 && (
+              <div className="tag-chip-list view-tags">
+                {note.tags.map((tag) => (
+                  <span className="tag-chip" key={tag.tag_id}>
+                    <FiTag />
+                    {tag.tag_name}
+                  </span>
+                ))}
+              </div>
+            )}
+
             <div className="note-view-content">
               <h3>Content</h3>
               <p>{note.content}</p>
+            </div>
+
+            <div className="activity-panel">
+              <h3>
+                <FiActivity />
+                Activity
+              </h3>
+              {activities.length > 0 ? (
+                <div className="activity-list">
+                  {activities.map((activity) => (
+                    <div className="activity-item" key={activity.activity_id}>
+                      <strong>{activity.action_type}</strong>
+                      <span>{activity.action_description}</span>
+                      <small>{formatDate(activity.created_at)}</small>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p>No activity recorded yet.</p>
+              )}
             </div>
           </div>
         ) : (

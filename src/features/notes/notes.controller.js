@@ -9,6 +9,12 @@ import {
 
 const ALLOWED_SORT_OPTIONS = ["newest", "oldest", "title_asc", "title_desc"];
 
+const parsePositiveIntegerQuery = (value, fallback) => {
+  if (value === undefined) return fallback;
+  const parsedValue = Number(value);
+  return Number.isInteger(parsedValue) ? parsedValue : NaN;
+};
+
 export const createNoteController = async (req, res) => {
   try {
     const { title, content, category } = req.body;
@@ -53,25 +59,25 @@ export const createNoteController = async (req, res) => {
 };
 export const getMyNotesController = async (req, res) => {
   try {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 10;
+    const page = parsePositiveIntegerQuery(req.query.page, 1);
+    const limit = parsePositiveIntegerQuery(req.query.limit, 10);
     const sortBy = req.query.sortBy || "newest";
     const title = req.query.title?.trim() || null;
     const category = req.query.category?.trim() || null;
     const keyword = req.query.keyword?.trim() || null;
     const tag = req.query.tag?.trim() || null;
 
-    if (page < 1) {
+    if (!Number.isInteger(page) || page < 1) {
       return res.status(400).json({
         success: false,
-        message: "page must be greater than or equal to 1 ",
+        message: "page must be a positive integer",
       });
     }
 
-    if (limit < 1 || limit > 100) {
+    if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
       return res.status(400).json({
         success: false,
-        message: "limit must be between 1 and 100",
+        message: "limit must be an integer between 1 and 100",
       });
     }
 
@@ -79,7 +85,7 @@ export const getMyNotesController = async (req, res) => {
       return res.status(400).json({
         success: false,
         message:
-          "Invalid sortBy value , Allowed values : newest , oldest , title_asc , title_desc ",
+          "Invalid sortBy value. Allowed values: newest, oldest, title_asc, title_desc",
       });
     }
 
@@ -112,7 +118,7 @@ export const getMyNotesController = async (req, res) => {
   } catch (error) {
     return res.status(error.statusCode || 500).json({
       success: false,
-      Message: error.message || "something went wrong",
+      message: error.message || "something went wrong",
     });
   }
 };
@@ -238,30 +244,30 @@ export const restoreNoteController = async (req, res) => {
 };
 export const getTrashController = async (req, res) => {
   try {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 10;
+    const page = parsePositiveIntegerQuery(req.query.page, 1);
+    const limit = parsePositiveIntegerQuery(req.query.limit, 10);
     const sortBy = req.query.sortBy || "newest";
     const title = req.query.title?.trim() || null;
     const category = req.query.category?.trim() || null;
     const keyword = req.query.keyword?.trim() || null;
     const tag = req.query.tag?.trim() || null;
-    if (page < 1) {
+    if (!Number.isInteger(page) || page < 1) {
       return res.status(400).json({
         success: false,
-        message: "page must be greater than or equal to 1",
+        message: "page must be a positive integer",
       });
     }
-    if (limit < 1 || limit > 100) {
+    if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
       return res.status(400).json({
         success: false,
-        message: "limit must be between 1 to 100 ",
+        message: "limit must be an integer between 1 and 100",
       });
     }
     if (!ALLOWED_SORT_OPTIONS.includes(sortBy)) {
       return res.status(400).json({
         success: false,
         message:
-          "invalid sortBy value. allowed values :newest, oldest, title_asc, title_desc",
+          "Invalid sortBy value. Allowed values: newest, oldest, title_asc, title_desc",
       });
     }
     const result = await getMyNotes({
@@ -281,6 +287,13 @@ export const getTrashController = async (req, res) => {
       data: {
         notes: result.notes,
         pagination: result.pagination,
+        filters: {
+          title,
+          category,
+          keyword,
+          tag,
+          sortBy,
+        },
       },
     });
   } catch (error) {

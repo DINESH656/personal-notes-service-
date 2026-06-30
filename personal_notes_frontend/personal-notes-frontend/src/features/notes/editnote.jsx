@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { FiCheckSquare, FiEdit3, FiSave } from "react-icons/fi";
 import Navbar from "../../components/NavBar";
 import { getNoteById, updateNote } from "./notes.service";
+import { assignTagsToNote, getTags } from "../tags/tags.service";
 
 const EditNote = () => {
   const { id } = useParams();
@@ -16,6 +18,8 @@ const EditNote = () => {
   const [error, setError] = useState("");
   const [pageLoading, setPageLoading] = useState(true);
   const [updateLoading, setUpdateLoading] = useState(false);
+  const [tags, setTags] = useState([]);
+  const [selectedTagIds, setSelectedTagIds] = useState([]);
 
   useEffect(() => {
     const fetchNote = async () => {
@@ -23,13 +27,18 @@ const EditNote = () => {
         setError("");
         setPageLoading(true);
 
-        const note = await getNoteById(id);
+        const [note, availableTags] = await Promise.all([
+          getNoteById(id),
+          getTags(),
+        ]);
 
         setFormData({
           title: note.title,
           content: note.content,
           category: note.category,
         });
+        setTags(availableTags || []);
+        setSelectedTagIds((note.tags || []).map((tag) => tag.tag_id));
       } catch (error) {
         setError(error.response?.data?.message || "Failed to load note");
       } finally {
@@ -45,6 +54,14 @@ const EditNote = () => {
       ...prev,
       [e.target.name]: e.target.value,
     }));
+  };
+
+  const handleTagToggle = (tagId) => {
+    setSelectedTagIds((prev) =>
+      prev.includes(tagId)
+        ? prev.filter((selectedTagId) => selectedTagId !== tagId)
+        : [...prev, tagId],
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -69,6 +86,7 @@ const EditNote = () => {
     try {
       setUpdateLoading(true);
       await updateNote(id, formData);
+      await assignTagsToNote(id, selectedTagIds);
       navigate("/dashboard");
     } catch (error) {
       setError(error.response?.data?.message || "Failed to update note");
@@ -83,8 +101,13 @@ const EditNote = () => {
 
       <div className="page-container">
         <div className="form-page-header">
-          <h2>Edit Note</h2>
-          <p>Update your note details and save changes.</p>
+          <span className="page-icon">
+            <FiEdit3 />
+          </span>
+          <div>
+            <h2>Edit Note</h2>
+            <p>Update your note details and save changes.</p>
+          </div>
         </div>
 
         {pageLoading ? (
@@ -118,7 +141,29 @@ const EditNote = () => {
               onChange={handleChange}
             />
 
+            {tags.length > 0 && (
+              <div className="tag-selector">
+                <label>
+                  <FiCheckSquare />
+                  Tags
+                </label>
+                <div className="tag-checkbox-grid">
+                  {tags.map((tag) => (
+                    <label className="tag-checkbox" key={tag.tag_id}>
+                      <input
+                        type="checkbox"
+                        checked={selectedTagIds.includes(tag.tag_id)}
+                        onChange={() => handleTagToggle(tag.tag_id)}
+                      />
+                      <span>{tag.tag_name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <button type="submit" disabled={updateLoading}>
+              <FiSave />
               {updateLoading ? "Updating..." : "Update Note"}
             </button>
           </form>

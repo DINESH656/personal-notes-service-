@@ -28,16 +28,17 @@ export const registerController = async (req, res) => {
       });
     }
     if (password.length < 8) {
-      return res
-        .status(400)
-        .json({ error: "Password must be at least 8 characters long" });
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 8 characters long",
+      });
     }
 
     const result = await registerUser({ full_name, email, password });
-    return res.status(200).json({
+    return res.status(201).json({
       success: true,
       message: "user registered successfully",
-      data: { result },
+      data: { user: result },
     });
   } catch (error) {
     return res.status(error.statusCode || 500).json({

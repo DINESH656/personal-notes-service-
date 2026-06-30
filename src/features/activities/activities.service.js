@@ -75,13 +75,17 @@ export const getActivities = async ({
     [userId, actionType, noteId],
   );
   const total = Number(countResult.rows[0].total);
+  const totalPages = Math.max(Math.ceil(total / limit), 1);
+
   return {
     activities: result.rows,
     pagination: {
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
     },
   };
 };

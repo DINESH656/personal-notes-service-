@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FiArchive, FiHome, FiRefreshCw, FiTag } from "react-icons/fi";
 import Navbar from "../../components/NavBar";
 import Pagination from "../../components/Pagination";
+import SearchBar from "../../components/searchBar";
 import Loader from "../../components/loader";
 import EmptyState from "../../components/EmptyState";
 import { getDeletedNotes, restoreDeletedNote } from "./trash.service";
+import { getTags } from "../tags/tags.service";
 
 const defaultPagination = {
   total: 0,
@@ -31,7 +34,9 @@ const Trash = () => {
     title: "",
     category: "",
     keyword: "",
+    tag: "",
   });
+  const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [restoringNoteId, setRestoringNoteId] = useState(null);
@@ -54,6 +59,19 @@ const Trash = () => {
     loadTrash(filters);
   }, [filters, loadTrash]);
 
+  useEffect(() => {
+    const loadTags = async () => {
+      try {
+        const response = await getTags();
+        setTags(response || []);
+      } catch {
+        setTags([]);
+      }
+    };
+
+    loadTags();
+  }, []);
+
   const handleRestore = async (noteId) => {
     try {
       setRestoringNoteId(noteId);
@@ -66,17 +84,50 @@ const Trash = () => {
     }
   };
 
+  const handleSearch = () => {
+    setFilters((prev) => ({
+      ...prev,
+      page: 1,
+    }));
+  };
+
+  const handleReset = () => {
+    setFilters({
+      page: 1,
+      limit: 10,
+      sortBy: "newest",
+      title: "",
+      category: "",
+      keyword: "",
+      tag: "",
+    });
+  };
+
   return (
     <div>
       <Navbar />
 
       <div className="page-container">
         <div className="form-page-header">
-          <h2>Trash</h2>
-          <p>Restore notes that were previously deleted.</p>
+          <span className="page-icon">
+            <FiArchive />
+          </span>
+          <div>
+            <h2>Trash</h2>
+            <p>Restore notes that were previously deleted.</p>
+          </div>
         </div>
 
         {error && <p className="error-text">{error}</p>}
+
+        <SearchBar
+          filters={filters}
+          setFilters={setFilters}
+          onSearch={handleSearch}
+          onReset={handleReset}
+          loading={loading}
+          tags={tags}
+        />
 
         <Pagination
           pagination={pagination}
@@ -98,7 +149,10 @@ const Trash = () => {
                 <div className="note-card" key={note.note_id}>
                   <div className="note-card-header">
                     <h3>{note.title}</h3>
-                    <span className="category-badge">{note.category}</span>
+                    <span className="category-badge">
+                      <FiTag />
+                      {note.category}
+                    </span>
                   </div>
 
                   <p className="note-content-preview">{note.content}</p>
@@ -113,6 +167,7 @@ const Trash = () => {
                       className="secondary-btn"
                       onClick={() => navigate("/dashboard")}
                     >
+                      <FiHome />
                       Dashboard
                     </button>
                     <button
@@ -120,6 +175,7 @@ const Trash = () => {
                       disabled={isRestoring}
                       onClick={() => handleRestore(note.note_id)}
                     >
+                      <FiRefreshCw />
                       {isRestoring ? "Restoring..." : "Restore"}
                     </button>
                   </div>

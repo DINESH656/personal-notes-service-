@@ -1,3 +1,5 @@
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+
 const Pagination = ({ pagination, filters, setFilters }) => {
   if (pagination.totalPages <= 1) return null;
 
@@ -15,6 +17,7 @@ const Pagination = ({ pagination, filters, setFilters }) => {
         disabled={!pagination.hasPreviousPage}
         onClick={() => changePage(filters.page - 1)}
       >
+        <FiChevronLeft />
         Previous
       </button>
 
@@ -29,6 +32,7 @@ const Pagination = ({ pagination, filters, setFilters }) => {
         onClick={() => changePage(filters.page + 1)}
       >
         Next
+        <FiChevronRight />
       </button>
     </div>
   );

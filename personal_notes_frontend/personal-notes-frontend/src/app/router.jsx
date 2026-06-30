@@ -7,6 +7,7 @@ import CreateNote from "../features/notes/createNote";
 import EditNote from "../features/notes/editnote";
 import ViewNote from "../features/notes/viewNote";
 import Trash from "../features/trash/trash";
+import Tags from "../features/tags/tags";
 
 const AppRoutes = () => {
   return (
@@ -47,6 +48,15 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Trash />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/tags"
+        element={
+          <ProtectedRoute>
+            <Tags />
           </ProtectedRoute>
         }
       />

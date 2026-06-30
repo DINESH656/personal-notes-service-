@@ -14,9 +14,8 @@ router.use(authenticateUser);
 
 router.post("/", createTagController);
 router.get("/", getTagsController);
-router.put("/:id", updateTagController);
-router.delete("/:id", deleteTagController);
-
 router.put("/note/:noteId", assignTagsToNoteController);
 router.get("/note/:noteId", getTagsByNoteController);
+router.put("/:id", updateTagController);
+router.delete("/:id", deleteTagController);
 export default router;

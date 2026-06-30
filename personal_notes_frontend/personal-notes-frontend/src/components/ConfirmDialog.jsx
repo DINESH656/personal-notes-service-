@@ -1,3 +1,5 @@
+import { FiAlertTriangle } from "react-icons/fi";
+
 const ConfirmDialog = ({
   isOpen,
   title,
@@ -14,35 +16,22 @@ const ConfirmDialog = ({
   return (
     <div className="modal-overlay">
       <div className="confirm-dialog">
-
         <div className="confirm-icon">
-          🗑
+          <FiAlertTriangle />
         </div>
 
         <h2>{title}</h2>
-
         <p>{message}</p>
 
         <div className="confirm-actions">
-
-          <button
-            className="secondary-btn"
-            onClick={onCancel}
-            disabled={loading}
-          >
+          <button className="secondary-btn" onClick={onCancel} disabled={loading}>
             {cancelText}
           </button>
 
-          <button
-            className={confirmButtonClass}
-            onClick={onConfirm}
-            disabled={loading}
-          >
+          <button className={confirmButtonClass} onClick={onConfirm} disabled={loading}>
             {loading ? "Please wait..." : confirmText}
           </button>
-
         </div>
-
       </div>
     </div>
   );

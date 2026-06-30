@@ -1,18 +1,16 @@
 # Personal Notes Service API
 
-Base URL: `http://localhost:8002`
+Base URL: `http://localhost:8002/api`
 
-## Auth
-
-Use the JWT returned from login as a bearer token:
+All protected routes require:
 
 `Authorization: Bearer <token>`
 
-## Users
+## Auth
 
 ### Register
 
-`POST /api/auth/register`
+`POST /auth/register`
 
 ```json
 {
@@ -24,7 +22,7 @@ Use the JWT returned from login as a bearer token:
 
 ### Login
 
-`POST /api/auth/login`
+`POST /auth/login`
 
 ```json
 {
@@ -33,56 +31,142 @@ Use the JWT returned from login as a bearer token:
 }
 ```
 
-## Notes
+### Current User
 
-All notes routes require authentication.
+`GET /auth/me`
+
+## Notes
 
 ### Create Note
 
-`POST /api/notes`
+`POST /notes`
 
 ```json
 {
-  "title": "My first note",
+  "title": "JWT Auth Notes",
   "category": "Backend",
-  "content": "Only the signed-in user can view this note."
+  "content": "JWT protects all note routes."
 }
 ```
 
-### Get My Notes
+### List Notes
 
-`GET /api/notes`
+`GET /notes?page=1&limit=10&sortBy=newest&title=jwt&category=Backend&keyword=token&tag=tag_abcd`
 
-### Get One Of My Notes
+Query params:
 
-`GET /api/notes/:noteId`
+| Name | Description |
+| --- | --- |
+| `page` | Positive integer page number. |
+| `limit` | Page size from 1 to 100. |
+| `sortBy` | `newest`, `oldest`, `title_asc`, `title_desc`. |
+| `title` | Optional title substring search. |
+| `category` | Optional category substring search. |
+| `keyword` | Optional full-text search over title, category, and content. |
+| `tag` | Optional tag id or tag name filter. |
 
-The API always filters notes by the authenticated user's `user_id`, so users cannot read another user's notes.
+Response includes `notes`, `pagination`, and active `filters`.
 
-### Search Notes
+### Get One Note
 
-`GET /api/notes?keyword=auth&category=Backend`
+`GET /notes/:id`
+
+Returns only notes owned by the authenticated user and excludes soft-deleted notes.
+
+### Update Note
+
+`PUT /notes/:id`
+
+```json
+{
+  "title": "Updated title",
+  "category": "Backend",
+  "content": "Updated note content."
+}
+```
+
+### Soft Delete Note
+
+`DELETE /notes/:id`
+
+Marks the note as deleted. It remains available for recovery/audit and no longer appears in normal listings.
+
+### Trash
+
+`GET /notes/trash?page=1&limit=10&sortBy=newest&keyword=jwt`
+
+Uses the same pagination, sorting, search, category, and tag filters as `/notes`, but returns deleted notes.
+
+### Restore Note
+
+`PATCH /notes/:id/restore`
 
 ## Tags
 
-All tag routes require authentication.
-
 ### Create Tag
 
-`POST /api/tags`
+`POST /tags`
 
 ```json
 {
-  "tagName": "important"
+  "tagName": "backend"
 }
 ```
+
+### List Tags
+
+`GET /tags`
+
+### Update Tag
+
+`PUT /tags/:id`
+
+```json
+{
+  "tagName": "interview-prep"
+}
+```
+
+### Delete Tag
+
+`DELETE /tags/:id`
 
 ### Assign Tags To Note
 
-`PUT /api/tags/note/:noteId`
+`PUT /tags/note/:noteId`
 
 ```json
 {
-  "tagIds": ["tag_abcd"]
+  "tagIds": ["tag_abcd", "tag_efgh"]
 }
 ```
+
+Send an empty array to remove all tags from the note.
+
+### Get Tags For Note
+
+`GET /tags/note/:noteId`
+
+## Activities
+
+### List Activities
+
+`GET /activities?page=1&limit=10&sortBy=newest&noteId=note_abcd&actionType=EDIT`
+
+Query params:
+
+| Name | Description |
+| --- | --- |
+| `page` | Positive integer page number. |
+| `limit` | Page size from 1 to 100. |
+| `sortBy` | `newest` or `oldest`. |
+| `noteId` | Optional note-specific history filter. |
+| `actionType` | Optional action filter such as `CREATE`, `EDIT`, `DELETE`, `RESTORE`, `TAG_ADD`, or `VIEW`. |
+
+## Dashboard
+
+### Dashboard Stats
+
+`GET /dashboard`
+
+Returns note, tag, category, and activity counters plus the latest note/activity for the authenticated user.

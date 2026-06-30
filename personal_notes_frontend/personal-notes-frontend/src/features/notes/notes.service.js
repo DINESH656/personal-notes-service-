@@ -22,6 +22,7 @@ export const getNotes = async ({
   title = "",
   category = "",
   keyword = "",
+  tag = "",
 }) => {
   const response = await api.get("/notes", {
     params: {
@@ -31,6 +32,7 @@ export const getNotes = async ({
       title,
       category,
       keyword,
+      tag,
     },
   });
   return response.data.data;
@@ -46,6 +48,7 @@ export const getTrashNotes = async ({
   title = "",
   category = "",
   keyword = "",
+  tag = "",
 }) => {
   const response = await api.get("/notes/trash", {
     params: {
@@ -55,6 +58,7 @@ export const getTrashNotes = async ({
       title,
       category,
       keyword,
+      tag,
     },
   });
   return response.data.data;

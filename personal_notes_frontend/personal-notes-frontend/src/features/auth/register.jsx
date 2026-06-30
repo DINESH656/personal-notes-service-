@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { FiBookOpen, FiCheckCircle } from "react-icons/fi";
 import { registerUser } from "./auth.service";
 
 const Register = () => {
@@ -23,6 +24,7 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setError("");
 
     if (!formData.full_name.trim()) {
@@ -47,8 +49,11 @@ const Register = () => {
 
     try {
       setLoading(true);
+
       await registerUser(formData);
+
       navigate("/login");
+
     } catch (error) {
       setError(error.response?.data?.message || "Registration failed");
     } finally {
@@ -58,15 +63,43 @@ const Register = () => {
 
   return (
     <div className="auth-page">
+
+      <div className="auth-left">
+
+        <div className="auth-logo">
+          <FiBookOpen size={34} />
+        </div>
+
+        <h1>Personal Knowledge Base</h1>
+
+        <p>
+          Create your free account and start organizing your notes,
+          activities and knowledge in one secure place.
+        </p>
+
+        <ul>
+          <li><FiCheckCircle /> Secure Authentication</li>
+          <li><FiCheckCircle /> Smart Organization</li>
+          <li><FiCheckCircle /> Powerful Search</li>
+          <li><FiCheckCircle /> Cloud Ready</li>
+        </ul>
+
+      </div>
+
       <div className="auth-card">
-        <h2>Create Account</h2>
-        <p>Register to manage your notes securely.</p>
+
+        <h2>Create Account 🚀</h2>
+
+        <p>
+          Register to begin building your personal knowledge base.
+        </p>
 
         <form className="form-card auth-form" onSubmit={handleSubmit}>
+
           <input
             type="text"
             name="full_name"
-            placeholder="Enter your full name"
+            placeholder="Full Name"
             value={formData.full_name}
             onChange={handleChange}
           />
@@ -74,7 +107,7 @@ const Register = () => {
           <input
             type="email"
             name="email"
-            placeholder="Enter your email"
+            placeholder="Email Address"
             value={formData.email}
             onChange={handleChange}
           />
@@ -82,14 +115,15 @@ const Register = () => {
           <input
             type="password"
             name="password"
-            placeholder="Enter your password"
+            placeholder="Password (Minimum 8 characters)"
             value={formData.password}
             onChange={handleChange}
           />
 
           <button type="submit" disabled={loading}>
-            {loading ? "Registering..." : "Register"}
+            {loading ? "Creating Account..." : "Create Account"}
           </button>
+
         </form>
 
         {error && <p className="error-text">{error}</p>}
@@ -97,7 +131,9 @@ const Register = () => {
         <p className="auth-switch">
           Already have an account? <Link to="/login">Login</Link>
         </p>
+
       </div>
+
     </div>
   );
 };

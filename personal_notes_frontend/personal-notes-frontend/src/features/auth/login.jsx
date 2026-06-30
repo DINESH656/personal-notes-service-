@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { FiBookOpen, FiCheckCircle } from "react-icons/fi";
 import { loginUser } from "./auth.service";
 
 const Login = () => {
@@ -36,6 +37,7 @@ const Login = () => {
 
     try {
       setLoading(true);
+
       const response = await loginUser(formData);
 
       localStorage.setItem("token", response.data.token);
@@ -51,15 +53,43 @@ const Login = () => {
 
   return (
     <div className="auth-page">
+
+      <div className="auth-left">
+
+        <div className="auth-logo">
+          <FiBookOpen size={34} />
+        </div>
+
+        <h1>Personal Knowledge Base</h1>
+
+        <p>
+          Securely organize your notes, tags, activities and build your own
+          digital knowledge workspace.
+        </p>
+
+        <ul>
+          <li><FiCheckCircle /> Secure Authentication</li>
+          <li><FiCheckCircle /> Smart Search</li>
+          <li><FiCheckCircle /> Tag Management</li>
+          <li><FiCheckCircle /> Activity Tracking</li>
+        </ul>
+
+      </div>
+
       <div className="auth-card">
-        <h2>Welcome Back</h2>
-        <p>Login to access your personal knowledge base.</p>
+
+        <h2>Welcome Back 👋</h2>
+
+        <p>
+          Login to continue managing your personal knowledge base.
+        </p>
 
         <form className="form-card auth-form" onSubmit={handleSubmit}>
+
           <input
             type="email"
             name="email"
-            placeholder="Enter your email"
+            placeholder="Email Address"
             value={formData.email}
             onChange={handleChange}
           />
@@ -67,7 +97,7 @@ const Login = () => {
           <input
             type="password"
             name="password"
-            placeholder="Enter your password"
+            placeholder="Password"
             value={formData.password}
             onChange={handleChange}
           />
@@ -75,14 +105,17 @@ const Login = () => {
           <button type="submit" disabled={loading}>
             {loading ? "Logging in..." : "Login"}
           </button>
+
         </form>
 
         {error && <p className="error-text">{error}</p>}
 
         <p className="auth-switch">
-          Don’t have an account? <Link to="/register">Register</Link>
+          Don't have an account? <Link to="/register">Register</Link>
         </p>
+
       </div>
+
     </div>
   );
 };

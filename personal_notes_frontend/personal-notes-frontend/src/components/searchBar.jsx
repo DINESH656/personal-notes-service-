@@ -7,69 +7,100 @@ const SearchBar = ({
 }) => {
     return (
         <div className="search-card">
-            <h3>SEARCH NOTES</h3>
+            <div className="search-header">
+                <div>
+                    <h3>🔍 Search Notes</h3>
+                    <p>Quickly find notes using title, keywords, sorting and filters.</p>
+                </div>
+            </div>
+
             <div className="search-bar">
-                <input
-                    type='text'
-                    placeholder="search by title "
-                    value={filters.title}
-                    onChange={(e) =>
-                        setFilters((prev) => ({
-                            ...prev,
-                            title: e.target.value,
-                        }))
-                    }
-                />
-                <input
-                    type='text'
-                    placeholder="search by keyword"
-                    value={filters.keyword}
-                    onChange={(e) =>
-                        setFilters((prev) => ({
-                            ...prev,
-                            keyword: e.target.value,
-                        }))
-                    }
-                />
-                <select
-                    value={filters.sortBy}
-                    onChange={(e) =>
-                        setFilters((prev) => ({
-                            ...prev,
-                            sortBy: e.target.value,
-                        }))
-                    }
-                >
-                    <option value='newest'>Newest First</option>
-                    <option value='oldest'>Oldest First</option>
-                    <option value='title_asc'>Title A-Z</option>
-                    <option value='title_desc'>Title Z-A</option>
-                </select>
-                <select value={filters.limit}
-                    onChange={(e) =>
-                        setFilters((prev) => ({
-                            ...prev,
-                            limit: Number(e.target.value),
-                        }))
-                    }
-                >
-                    <option value={5}>5</option>
-                    <option value={10}>10</option>
-                    <option value={20}>20</option>
-                    <option value={50}>50</option>
-                </select>
-                <button
-                    className="primary-btn"
-                    onClick={onSearch}
-                    disabled={loading}
-                > {loading ? 'searching...' : 'Search'}
-                </button>
+
+                <div className="form-group">
+                    <label>Title</label>
+                    <input
+                        type="text"
+                        placeholder="Search by title"
+                        value={filters.title}
+                        onChange={(e) =>
+                            setFilters((prev) => ({
+                                ...prev,
+                                title: e.target.value,
+                            }))
+                        }
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label>Keyword</label>
+                    <input
+                        type="text"
+                        placeholder="Search by keyword"
+                        value={filters.keyword}
+                        onChange={(e) =>
+                            setFilters((prev) => ({
+                                ...prev,
+                                keyword: e.target.value,
+                            }))
+                        }
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label>Sort By</label>
+
+                    <select
+                        value={filters.sortBy}
+                        onChange={(e) =>
+                            setFilters((prev) => ({
+                                ...prev,
+                                sortBy: e.target.value,
+                            }))
+                        }
+                    >
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="title_asc">Title A-Z</option>
+                        <option value="title_desc">Title Z-A</option>
+                    </select>
+                </div>
+
+                <div className="form-group">
+                    <label>Rows</label>
+
+                    <select
+                        value={filters.limit}
+                        onChange={(e) =>
+                            setFilters((prev) => ({
+                                ...prev,
+                                limit: Number(e.target.value),
+                            }))
+                        }
+                    >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                    </select>
+                </div>
+            </div>
+
+            <div className="search-actions">
+
                 <button
                     className="secondary-btn"
                     onClick={onReset}
                     disabled={loading}
                 >
-                    RESET
+                    ↺ Reset
+                </button>
+
+                <button
+                    className="primary-btn"
+                    onClick={onSearch}
+                    disabled={loading}
+                >
+                    {loading ? "Searching..." : "🔍 Search"}
                 </button>
 
             </div>

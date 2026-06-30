@@ -59,6 +59,7 @@ export const getMyNotesController = async (req, res) => {
     const title = req.query.title?.trim() || null;
     const category = req.query.category?.trim() || null;
     const keyword = req.query.keyword?.trim() || null;
+    const tag = req.query.tag?.trim() || null;
 
     if (page < 1) {
       return res.status(400).json({
@@ -90,6 +91,7 @@ export const getMyNotesController = async (req, res) => {
       title,
       category,
       keyword,
+      tag,
       isDeleted: false,
     });
     return res.status(200).json({
@@ -102,6 +104,7 @@ export const getMyNotesController = async (req, res) => {
           title,
           category,
           keyword,
+          tag,
           sortBy,
         },
       },
@@ -241,6 +244,7 @@ export const getTrashController = async (req, res) => {
     const title = req.query.title?.trim() || null;
     const category = req.query.category?.trim() || null;
     const keyword = req.query.keyword?.trim() || null;
+    const tag = req.query.tag?.trim() || null;
     if (page < 1) {
       return res.status(400).json({
         success: false,
@@ -268,6 +272,7 @@ export const getTrashController = async (req, res) => {
       title,
       category,
       keyword,
+      tag,
       isDeleted: true,
     });
     return res.status(200).json({

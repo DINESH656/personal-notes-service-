@@ -11,6 +11,17 @@ is_deleted,
 deleted_at,
 created_at ,
 updated_at`;
+const NOTE_SELECT_FIELDS_WITH_ALIAS = `
+n.note_id,
+n.user_id,
+n.title,
+n.content,
+n.category,
+n.is_deleted,
+n.deleted_at,
+n.created_at,
+n.updated_at
+`;
 const SORT_OPTIONS = {
   newest: "updated_at DESC",
   oldest: "updated_at ASC",
@@ -42,46 +53,79 @@ export const getMyNotes = async ({
   title = null,
   category = null,
   keyword = null,
+  tag = null,
   isDeleted = false,
 }) => {
   const normalizedTitle = title?.trim() || null;
   const normalizedCategory = category?.trim() || null;
   const normalizedKeyword = keyword?.trim() || null;
+  const normalizedTag = tag?.trim().toLowerCase() || null;
   const currentPage = Number(page) > 0 ? Number(page) : 1;
   const perPage = Number(limit) > 0 ? Number(limit) : 10;
   const offset = (currentPage - 1) * perPage;
   const orderByClause = SORT_OPTIONS[sortBy] || SORT_OPTIONS.newest;
   const countResult = await query(
-    `SELECT COUNT(*) :: int AS total
-    FROM notes 
-    WHERE user_id = $1 
-    AND is_deleted = $2
-    AND ($3 :: text IS NULL OR title ILIKE '%' || $3 || '%')
-    AND ($4 :: text IS NULL OR category ILIKE '%' || $4 || '%')
-    AND ($5  :: text IS NULL 
-    OR title ILIKE '%' || $5 || '%'
-    OR content ILIKE '%' || $5 || '%' )`,
-    [userId, isDeleted, normalizedTitle, normalizedCategory, normalizedKeyword],
-  );
-  const total = countResult.rows[0].total;
-  const notesResult = await query(
-    `SELECT ${NOTE_SELECT_FIELDS}
-    FROM notes 
-    WHERE user_id = $1
-    AND is_deleted = $2 
-    AND($3 :: text IS NULL OR title ILIKE '%' || $3 || '%')
-    AND($4 :: text IS NULL OR category ILIKE '%' || $4 || '%')
-    AND($5 :: text IS NULL 
-    OR title ILIKE '%' || $5 || '%'
-    OR content ILIKE '%' || $5 || '%'
-    )
-    ORDER BY ${orderByClause} LIMIT $6 OFFSET $7`,
+    `SELECT COUNT(DISTINCT n.note_id) :: int AS total
+    FROM notes n
+    LEFT JOIN note_tags nt
+    ON nt.note_id = n.note_id
+    LEFT JOIN tags t 
+    ON t.tag_id = nt.tag_id
+    WHERE 
+    n.user_id = $1
+    AND n.is_deleted = $2
+    AND($3 :: TEXT IS NULL OR n.title ILIKE '%' || $3 || '%')
+    AND($4 :: TEXT IS NULL OR n.category ILIKE '%' || $4 || '%')
+    AND(
+    $5 :: TEXT IS NULL OR n.title ILIKE '%' || $5 || '%'
+    OR n.content ILIKE '%' || $5 || '%')
+   AND (
+   $6 :: TEXT IS NULL OR LOWER(t.tag_name) = $6)
+    `,
     [
       userId,
       isDeleted,
       normalizedTitle,
       normalizedCategory,
       normalizedKeyword,
+      normalizedTag,
+    ],
+  );
+  const total = countResult.rows[0].total;
+  const notesResult = await query(
+    `
+  SELECT DISTINCT
+      n.${NOTE_SELECT_FIELDS_WITH_ALIAS}
+  FROM notes n
+  LEFT JOIN note_tags nt
+      ON nt.note_id = n.note_id
+  LEFT JOIN tags t
+      ON t.tag_id = nt.tag_id
+  WHERE
+      n.user_id = $1
+      AND n.is_deleted = $2
+      AND ($3::TEXT IS NULL OR n.title ILIKE '%' || $3 || '%')
+      AND ($4::TEXT IS NULL OR n.category ILIKE '%' || $4 || '%')
+      AND (
+          $5::TEXT IS NULL
+          OR n.title ILIKE '%' || $5 || '%'
+          OR n.content ILIKE '%' || $5 || '%'
+      )
+      AND (
+          $6::TEXT IS NULL
+          OR LOWER(t.tag_name) = $6
+      )
+  ORDER BY ${orderByClause}
+  LIMIT $7
+  OFFSET $8
+`,
+    [
+      userId,
+      isDeleted,
+      normalizedTitle,
+      normalizedCategory,
+      normalizedKeyword,
+      normalizedTag,
       perPage,
       offset,
     ],

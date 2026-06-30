@@ -75,15 +75,15 @@ export const assignTagsToNote = async ({ noteId, userId, tagIds }) => {
   try {
     await client.query("BEGIN");
 
-    const noteResult = await client.query(
+    const noteResults = await client.query(
       `SELECT note_id 
-        FROM notes
-        WHERE note_id = $1
-        AND user_id = $2 
-        AND is_deleted = FALSE`,
+      FROM notes
+      WHERE note_id = $1
+      AND user_id = $2
+      AND is_deleted = FALSE`,
       [noteId, userId],
     );
-    if (noteResult.rows.length === 0) {
+    if (noteResults.rows.length === 0) {
       const error = new Error("note not found");
       error.statusCode = 404;
       throw error;
@@ -92,31 +92,28 @@ export const assignTagsToNote = async ({ noteId, userId, tagIds }) => {
     if (uniqueTagIds.length > 0) {
       const verifyTags = await client.query(
         `SELECT tag_id 
-        from tags 
-        WHERE user_id = $1 
+        FROM tags
+        WHERE user_id = $1
         AND tag_id = ANY($2 :: VARCHAR[])`,
         [userId, uniqueTagIds],
       );
       if (verifyTags.rows.length !== uniqueTagIds.length) {
-        const error = new Error(
-          "one or more tags do not belong to this user. ",
-        );
+        const error = new Error("Invalid tag selection");
         error.statusCode = 400;
         throw error;
       }
     }
     await client.query(
-      `DELETE FROM note_tags
-        WHERE note_id = $1`,
+      `DELETE FROM 
+      note_tags
+      WHERE note_id = $1`,
       [noteId],
     );
-    for (const tagId of uniqueTagIds) {
+    if (uniqueTagIds.length > 0) {
       await client.query(
-        `INSERT INTO note_tags 
-            ( note_id , tag_id )
-            VALUES (
-            $1 , $2)`,
-        [noteId, tagId],
+        `INSERT INTO note_tags(note_id , tag_id)
+        SELECT $1 UNNEST($2 :: VARCHAR[])`,
+        [noteId, uniqueTagIds],
       );
     }
     await logActivity({

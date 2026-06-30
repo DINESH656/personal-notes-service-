@@ -36,19 +36,19 @@ const Navbar = () => {
       </div>
 
       <div className="nav-links">
-        <NavLink to="/dashboard">
+        <NavLink to="/dashboard" className={({ isActive }) => (isActive ? "active" : "") }>
           <FiGrid />
           <span>Dashboard</span>
         </NavLink>
-        <NavLink to="/notes/create">
+        <NavLink to="/notes/create" className={({ isActive }) => (isActive ? "active" : "") }>
           <FiEdit3 />
           <span>Create</span>
         </NavLink>
-        <NavLink to="/tags">
+        <NavLink to="/tags" className={({ isActive }) => (isActive ? "active" : "") }>
           <FiTag />
           <span>Tags</span>
         </NavLink>
-        <NavLink to="/trash">
+        <NavLink to="/trash" className={({ isActive }) => (isActive ? "active" : "") }>
           <FiArchive />
           <span>Trash</span>
         </NavLink>

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiEdit3, FiFileText, FiLayers, FiPlus } from "react-icons/fi";
+import { FiEdit3, FiLayers, FiPlus, FiTag } from "react-icons/fi";
 
 import ConfirmDialog from "../../components/ConfirmDialog";
 import EmptyState from "../../components/EmptyState";
@@ -9,6 +9,7 @@ import Navbar from "../../components/NavBar";
 import NoteCard from "./notecard";
 import Pagination from "../../components/Pagination";
 import SearchBar from "../../components/searchBar";
+import { getDashboardStats } from "../dashboard/dashboard.service";
 import { deleteNote, getNotes } from "./notes.service";
 import { getTags } from "../tags/tags.service";
 
@@ -29,6 +30,10 @@ const Dashboard = () => {
   const [deletingNoteId, setDeletingNoteId] = useState(null);
   const [confirmDeleteNote, setConfirmDeleteNote] = useState(null);
   const [tags, setTags] = useState([]);
+  const [dashboardStats, setDashboardStats] = useState({
+    activeNotes: 0,
+    totalTags: 0,
+  });
   const [pagination, setPagination] = useState(defaultPagination);
   const [filters, setFilters] = useState({
     page: 1,
@@ -62,16 +67,23 @@ const Dashboard = () => {
   }, [filters, loadNotes]);
 
   useEffect(() => {
-    const loadTags = async () => {
+    const loadDashboardData = async () => {
       try {
-        const response = await getTags();
-        setTags(response || []);
+        const [tagResponse, statsResponse] = await Promise.all([
+          getTags(),
+          getDashboardStats(),
+        ]);
+        setTags(tagResponse || []);
+        setDashboardStats({
+          activeNotes: statsResponse?.activeNotes ?? 0,
+          totalTags: statsResponse?.totalTags ?? 0,
+        });
       } catch {
         setTags([]);
       }
     };
 
-    loadTags();
+    loadDashboardData();
   }, []);
 
   const handleDelete = async () => {
@@ -82,6 +94,11 @@ const Dashboard = () => {
       await deleteNote(confirmDeleteNote);
       setConfirmDeleteNote(null);
       await loadNotes(filters);
+      const statsResponse = await getDashboardStats();
+      setDashboardStats({
+        activeNotes: statsResponse?.activeNotes ?? 0,
+        totalTags: statsResponse?.totalTags ?? 0,
+      });
     } catch (error) {
       alert(error.response?.data?.message || "Failed to delete note.");
     } finally {
@@ -127,17 +144,17 @@ const Dashboard = () => {
               </div>
               <div>
                 <span>Total Notes</span>
-                <strong>{pagination.total}</strong>
+                <strong>{dashboardStats.activeNotes}</strong>
               </div>
             </div>
 
-            <div className="summary-card">
-              <div className="summary-icon green">
-                <FiFileText />
+            <div className="summary-card accent-card">
+              <div className="summary-icon amber">
+                <FiTag />
               </div>
               <div>
-                <span>Showing</span>
-                <strong>{notes.length}</strong>
+                <span>Tags</span>
+                <strong>{dashboardStats.totalTags}</strong>
               </div>
             </div>
 

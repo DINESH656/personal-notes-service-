@@ -1,15 +1,37 @@
+import e from "cors";
 import { query, getClient } from "../../config/db.js";
 import { logActivity } from "../activities/activities.service.js";
 
 export const createTag = async ({ userId, tagName }) => {
+  const normalizedTag = tagName.trim.toLowerCase();
+  if (normalizedTag.length > 50) {
+    const error = new Error("Tag name cannot exceed 50 characters.");
+    error.statusCode = 400;
+    throw error;
+  }
+  const existingTag = await query(
+    `SELECT tag_id 
+    FROM tags
+    WHERE user_id = $1
+    AND LOWER(tag_name) = $2`,
+    [userId, normalizedTag],
+  );
+  if (existingTag.rows.length > 0) {
+    const error = new Error("tags already exists");
+    error.statusCode = 409;
+    throw error;
+  }
   const result = await query(
-    `INSERT INTO tags(user_id , tag_name )
-        VALUES ($1 ,$2) 
-        RETURNING tag_id ,
-        user_id ,
-        tag_name ,
-        created_at `,
-    [userId, tagName.trim()],
+    `INSERT INTO tags(
+    user_id ,
+    tag_name ,
+    ) VALUES($1 , $2)
+     RETURNING 
+     tag_id ,
+     user_id,
+     tag_name,
+     created_at`,
+    [userId, normalizedTag],
   );
   return result.rows[0];
 };
@@ -30,6 +52,26 @@ export const getTagByUser = async (userId) => {
 };
 
 export const updateTag = async ({ tagId, userId, tagName }) => {
+  const normalizedTag = tagName.trim().toLowerCase();
+  if (normalizedTag.length > 50) {
+    const error = new Error("Tag name cannot exceed 50 characters.");
+    error.statusCode = 400;
+    throw error;
+  }
+  const duplicate = await query(
+    `SELECT tag_id 
+    FROM tags 
+    WHERE user_id = $1
+    AND LOWER(tag_name) = $2
+    AND tag_id <>$3`,
+    [userId, normalizedTag, tagId],
+  );
+  if (duplicate.rows.length > 0) {
+    const error = new Error("Tag already exists");
+    error.statusCode = 409;
+    throw error;
+  }
+
   const result = await query(
     `UPDATE tags
         SET tag_name = $1 
@@ -40,7 +82,7 @@ export const updateTag = async ({ tagId, userId, tagName }) => {
         user_id ,
         tag_name ,
         created_at`,
-    [tagName.trim(), tagId, userId],
+    [normalizedTag, tagId, userId],
   );
   if (result.rows.length === 0) {
     const error = new Error("tag not found");

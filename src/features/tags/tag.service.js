@@ -3,26 +3,29 @@ import { query, getClient } from "../../config/db.js";
 import { logActivity } from "../activities/activities.service.js";
 
 export const createTag = async ({ userId, tagName }) => {
-  const normalizedTag = tagName.trim.toLowerCase();
-  if (normalizedTag.length > 50) {
-    const error = new Error("Tag name cannot exceed 50 characters.");
-    error.statusCode = 400;
-    throw error;
-  }
-  const existingTag = await query(
-    `SELECT tag_id 
+  const client = await getClient();
+  try {
+    await client.query("BEGIN");
+    const normalizedTag = tagName.trim.toLowerCase();
+    if (normalizedTag.length > 50) {
+      const error = new Error("Tag name cannot exceed 50 characters.");
+      error.statusCode = 400;
+      throw error;
+    }
+    const existingTag = await client.query(
+      `SELECT tag_id 
     FROM tags
     WHERE user_id = $1
     AND LOWER(tag_name) = $2`,
-    [userId, normalizedTag],
-  );
-  if (existingTag.rows.length > 0) {
-    const error = new Error("tags already exists");
-    error.statusCode = 409;
-    throw error;
-  }
-  const result = await query(
-    `INSERT INTO tags(
+      [userId, normalizedTag],
+    );
+    if (existingTag.rows.length > 0) {
+      const error = new Error("tags already exists");
+      error.statusCode = 409;
+      throw error;
+    }
+    const result = await client.query(
+      `INSERT INTO tags(
     user_id ,
     tag_name ,
     ) VALUES($1 , $2)
@@ -31,9 +34,24 @@ export const createTag = async ({ userId, tagName }) => {
      user_id,
      tag_name,
      created_at`,
-    [userId, normalizedTag],
-  );
-  return result.rows[0];
+      [userId, normalizedTag],
+    );
+    const tag = result.rows[0];
+    await logActivity({
+      client,
+      noteId: null,
+      userId,
+      actionType: "TAG_CREATE",
+      actionDescription: `Created tag '${tag.tag_name}'`,
+    });
+    await client.query("COMMIT");
+    return tag;
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
 };
 
 export const getTagByUser = async (userId) => {
@@ -52,28 +70,31 @@ export const getTagByUser = async (userId) => {
 };
 
 export const updateTag = async ({ tagId, userId, tagName }) => {
-  const normalizedTag = tagName.trim().toLowerCase();
-  if (normalizedTag.length > 50) {
-    const error = new Error("Tag name cannot exceed 50 characters.");
-    error.statusCode = 400;
-    throw error;
-  }
-  const duplicate = await query(
-    `SELECT tag_id 
+  const client = await getClient();
+  try {
+    await client.query("BEGIN");
+    const normalizedTag = tagName.trim().toLowerCase();
+    if (normalizedTag.length > 50) {
+      const error = new Error("Tag name cannot exceed 50 characters.");
+      error.statusCode = 400;
+      throw error;
+    }
+    const duplicate = await client.query(
+      `SELECT tag_id 
     FROM tags 
     WHERE user_id = $1
     AND LOWER(tag_name) = $2
     AND tag_id <>$3`,
-    [userId, normalizedTag, tagId],
-  );
-  if (duplicate.rows.length > 0) {
-    const error = new Error("Tag already exists");
-    error.statusCode = 409;
-    throw error;
-  }
+      [userId, normalizedTag, tagId],
+    );
+    if (duplicate.rows.length > 0) {
+      const error = new Error("Tag already exists");
+      error.statusCode = 409;
+      throw error;
+    }
 
-  const result = await query(
-    `UPDATE tags
+    const result = await client.query(
+      `UPDATE tags
         SET tag_name = $1 
         WHERE tag_id = $2
         AND user_id = $3
@@ -82,19 +103,37 @@ export const updateTag = async ({ tagId, userId, tagName }) => {
         user_id ,
         tag_name ,
         created_at`,
-    [normalizedTag, tagId, userId],
-  );
-  if (result.rows.length === 0) {
-    const error = new Error("tag not found");
-    error.statusCode = 404;
+      [normalizedTag, tagId, userId],
+    );
+    if (result.rows.length === 0) {
+      const error = new Error("tag not found");
+      error.statusCode = 404;
+      throw error;
+    }
+    const tag = result.rows[0];
+    await logActivity({
+      client,
+      noteId: null,
+      userId,
+      actionType: "TAG_UPDATE",
+      actionDescription: `Update tag to'${tag.tag_name}'`,
+    });
+    await client.query("COMMIT");
+    return tag;
+  } catch (error) {
+    await client.query("ROLLBACK");
     throw error;
+  } finally {
+    client.release();
   }
-  return result.rows[0];
 };
 
 export const deleteTag = async ({ tagId, userId }) => {
-  const result = await query(
-    `DELETE FROM tags 
+  const client = await getClient();
+  try {
+    await client.query("BEGIN");
+    const result = await client.query(
+      `DELETE FROM tags 
         WHERE tag_id = $1
         AND user_id = $2
         RETURNING 
@@ -102,14 +141,28 @@ export const deleteTag = async ({ tagId, userId }) => {
         user_id ,
         tag_name 
         `,
-    [tagId, userId],
-  );
-  if (result.rows.length === 0) {
-    const error = new Error("tag not found");
-    error.statusCode = 404;
+      [tagId, userId],
+    );
+    if (result.rows.length === 0) {
+      const error = new Error("tag not found");
+      error.statusCode = 404;
+      throw error;
+    }
+    const tag = result.rows[0];
+    await logActivity({
+      client,
+      noteId: null,
+      userId,
+      actionType: "TAG_DELETE",
+      actionDescription: `Deleted tag '${tag.tag_name}'`,
+    });
+    return tag;
+  } catch (error) {
+    await client.query("ROLLBACK");
     throw error;
+  } finally {
+    client.release();
   }
-  return result.rows[0];
 };
 
 export const assignTagsToNote = async ({ noteId, userId, tagIds }) => {

@@ -19,12 +19,13 @@ export const testSupaBaseConnection = async () => {
   console.log("connected to supabase successfully ");
 };
 
-export const uploadFile = async (file) => {
+export const uploadFile = async (file, userId, noteId) => {
   const extension = path.extname(file.originalname);
   const storedFileName = `${crypto.randomUUID()}${extension}`;
+  const storagePath = `${userId}/${noteId}/${storedFileName}`;
   const { error } = await supabase.storage
     .from(BUCKET)
-    .upload(storedFileName, file.buffer, {
+    .upload(storagePath, file.buffer, {
       contentType: file.mimetype,
       upsert: false,
     });
@@ -37,27 +38,23 @@ export const uploadFile = async (file) => {
     fileType: file.mimetype,
     fileSize: file.size,
     storageBucket: BUCKET,
-    storagePath: storedFileName,
+    storagePath,
   };
 };
 
-export const deleteFile = async (storedFileName) => {
-  const { error } = await supabase.storage
-    .from(BUCKET)
-    .remove([storedFileName]);
+export const deleteFile = async (storagePath) => {
+  const { error } = await supabase.storage.from(BUCKET).remove([storagePath]);
   if (error) {
     throw new Error(error.message);
   }
 };
 
-export const generateSignedUrl = async (storedFileName) => {
+export const generateSignedUrl = async (storagePath) => {
   const { data, error } = await supabase.storage
     .from(BUCKET)
-    .createSignedUrl(storedFileName, 60 * 10);
+    .createSignedUrl(storagePath, 60 * 10);
   if (error) {
     throw new Error(error.message);
   }
   return data.signedUrl;
 };
-
-

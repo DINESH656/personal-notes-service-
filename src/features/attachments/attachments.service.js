@@ -1,4 +1,4 @@
-import { query } from "../../config/db.js";
+import { query, getClient } from "../../config/db.js";
 import { logActivity } from "../activities/activities.service.js";
 import {
   uploadFile,
@@ -32,38 +32,60 @@ export const uploadAttachment = async ({ noteId, userId, file }) => {
     error.statusCode = 404;
     throw error;
   }
-  const uploadedFile = await uploadFile(file);
-  const result = await query(
-    `INSERT INTO attachments(
-    note_id ,
-    user_id,
-    original_file_name,
-    stored_file_name,
-    file_type,
-    file_size,
-    storage_bucket,
-    storage_path)
-    VALUES(
-    $1 , $2, $3,$4,$5,$6,$7,$8)
-    RETURNING ${ATTACHMENT_SELECT_FIELDS}`,
-    [
+  const client = await getClient();
+  let uploadedFile;
+  try {
+    await client.query("BEGIN");
+    uploadedFile = await uploadedFile({ file, userId, noteId });
+
+    const result = client.query(
+      `INSERT INTO attachments(
+        note_id,
+          user_id,
+          original_file_name,
+          stored_file_name,
+          file_type,
+          file_size,
+          storage_bucket,
+          storage_path
+        )VALUES (
+        $1,$2,$3,$4,$5,$6,$7,$8
+        ) RETURNING ${ATTACHMENT_SELECT_FIELDS}`,
+      [
+        noteId,
+        userId,
+        uploadedFile.originalFileName,
+        uploadedFile.storedFileName,
+        uploadedFile.fileType,
+        uploadedFile.fileSize,
+        uploadedFile.storageBucket,
+        uploadedFile.storagePath,
+      ],
+    );
+    await logActivity({
+      client,
       noteId,
       userId,
-      uploadedFile.originalFileName,
-      uploadedFile.storedFileName,
-      uploadedFile.fileType,
-      uploadedFile.fileSize,
-      uploadedFile.storageBucket,
-      uploadedFile.storagePath,
-    ],
-  );
-  return result.rows[0];
-  await logActivity({
-    noteId: noteResult.rows[0].note_id,
-    userId,
-    actionType: "UPLOAD_ATTACHMENT",
-    actionDescription: `Uploaded Attachment '${uploadedFile.originalFileName}'`,
-  });
+      actionType: "UPLOAD_ATTACHMENT",
+      actionDescription: `Uploaded attachment "${uploadedFile.originalFileName}"`,
+    });
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    if (uploadedFile) {
+      try {
+        await deleteFile(uploadedFile.storedFileName);
+      } catch (deleteError) {
+        console.error(
+          "faled to remove uploaded file after the rollback: ",
+          deleteError.message,
+        );
+      }
+    }
+    throw error;
+  } finally {
+    client.release();
+  }
 };
 
 export const getAttachments = async ({ noteId, userId }) => {
@@ -92,7 +114,7 @@ export const getAttachmentById = async ({ attachmentId, userId }) => {
     [attachmentId, userId],
   );
   if (result.rows.length === 0) {
-    throw (error = new Error("Attachment not found"));
+    const error = new Error("Attachment not found");
     error.statusCode = 404;
     throw error;
   }
@@ -104,7 +126,7 @@ export const getAttachmentDownloadUrl = async ({ attachmentId, userId }) => {
     attachmentId,
     userId,
   });
-  const signedUrl = await generateSignedUrl(attachment.stored_file_name);
+  const signedUrl = await generateSignedUrl(attachment.storage_path);
   return {
     attachment,
     signedUrl,
@@ -115,7 +137,7 @@ export const deleteAttachment = async ({ attachmentId, userId }) => {
     attachmentId,
     userId,
   });
-  await deleteFile(attachment.stored_file_name);
+  await deleteFile(attachment.storage_path);
   await query(`DELETE FROM attachments WHERE attachment_id = $1`, [
     attachmentId,
   ]);

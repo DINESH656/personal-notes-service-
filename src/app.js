@@ -5,6 +5,7 @@ import noteRoutes from "./features/notes/notes.router.js";
 import tagRoutes from "./features/tags/tag.router.js";
 import activityRoutes from "./features/activities/activities.router.js";
 import dashboardRoutes from "./features/dashboard/dashboard.router.js";
+import attachmentRoutes from "./features/attachments/attachments.routes.js";
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use("/api/notes", noteRoutes);
 app.use("/api/tags", tagRoutes);
 app.use("/api/activities", activityRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/attachments", attachmentRoutes);
 
 app.use((req, res) => {
   return res.status(404).json({

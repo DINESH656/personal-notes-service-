@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import app from "./app.js";
 import { checkConnection } from "./config/db.js";
+import { testSupaBaseConnection } from "./features/attachments/storage/storage.service.js";
 
 dotenv.config();
 
@@ -9,6 +10,7 @@ const PORT = process.env.PORT || 3000;
 const startServer = async () => {
   try {
     await checkConnection();
+    await testSupaBaseConnection();
 
     const server = app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
@@ -17,7 +19,7 @@ const startServer = async () => {
     server.on("error", (error) => {
       if (error.code === "EADDRINUSE") {
         console.error(
-          `Port ${PORT} is already in use. Stop the existing server or change PORT in .env.`
+          `Port ${PORT} is already in use. Stop the existing server or change PORT in .env.`,
         );
         process.exit(1);
       }

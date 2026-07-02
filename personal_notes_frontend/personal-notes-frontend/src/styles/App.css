@@ -1,23 +1,24 @@
 :root {
-  --bg: #f4f0ea;
+  --bg: #f4f6fb;
   --surface: #ffffff;
-  --surface-muted: #f8fafc;
-  --border: #d9e1ea;
-  --text: #111827;
-  --muted: #667085;
-  --primary: #3157d5;
-  --primary-dark: #2443a8;
+  --surface-muted: #f8fbff;
+  --surface-strong: #f3f6ff;
+  --border: #d8e1ef;
+  --text: #0f172a;
+  --muted: #5b7083;
+  --primary: #4f46e5;
+  --primary-dark: #3730a3;
+  --primary-soft: #eef2ff;
   --success: #0f766e;
   --success-soft: #e6fffb;
-  --amber: #c2410c;
-  --amber-soft: #fff7ed;
+  --accent: #2563eb;
   --danger: #dc2626;
   --danger-soft: #fef2f2;
-  --warning: #b45309;
+  --warning: #c2410c;
   --warning-soft: #fff7ed;
-  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.08);
-  --shadow-md: 0 18px 52px rgba(16, 24, 40, 0.12);
-  --radius: 14px;
+  --shadow-sm: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 30px 80px rgba(15, 23, 42, 0.12);
+  --radius: 18px;
 }
 
 * {
@@ -40,17 +41,9 @@ body {
     "Segoe UI",
     sans-serif;
   background:
-    radial-gradient(
-      circle at top left,
-      rgba(99, 102, 241, 0.14),
-      transparent 24%
-    ),
-    radial-gradient(
-      circle at bottom right,
-      rgba(251, 191, 36, 0.12),
-      transparent 28%
-    ),
-    linear-gradient(180deg, #f8fafc 0%, #f4f0ea 100%);
+    radial-gradient(circle at top left, rgba(79, 70, 229, 0.12), transparent 24%),
+    radial-gradient(circle at bottom right, rgba(37, 99, 235, 0.08), transparent 28%),
+    linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
   color: var(--text);
 }
 
@@ -68,9 +61,9 @@ a svg {
 }
 
 .page-container {
-  width: min(1180px, calc(100% - 40px));
-  margin: 28px auto 54px;
-  padding: 0 12px;
+  width: min(1180px, calc(100% - 48px));
+  margin: 38px auto 54px;
+  padding: 0 18px;
 }
 
 .navbar {
@@ -143,11 +136,11 @@ a svg {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 42px;
-  padding: 10px 14px;
-  color: #344054;
-  background: rgba(255, 255, 255, 0.96);
-  border: 1px solid transparent;
+  min-height: 44px;
+  padding: 10px 16px;
+  color: #334155;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 999px;
   font-size: 14px;
   font-weight: 700;
@@ -157,6 +150,14 @@ a svg {
     background 0.16s ease,
     border-color 0.16s ease,
     color 0.16s ease;
+}
+
+.nav-links a:hover,
+.nav-links button:hover {
+  color: var(--primary);
+  background: #f8f9ff;
+  transform: translateY(-1px);
+  border-color: rgba(79, 70, 229, 0.24);
 }
 
 .nav-links a:hover,
@@ -381,14 +382,55 @@ a svg {
 .form-card {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 22px;
+  gap: 18px;
+  padding: 28px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
 }
 
 .auth-form {
   padding: 0;
   border: 0;
   box-shadow: none;
+}
+
+.form-card input,
+.form-card textarea,
+.form-card select,
+.search-bar input,
+.search-bar select,
+.tag-form input,
+.tag-edit-form input {
+  width: 100%;
+  min-height: 48px;
+  padding: 14px 16px;
+  color: var(--text);
+  background: #ffffff;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 16px;
+  outline: none;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.form-card textarea {
+  min-height: 240px;
+  resize: vertical;
+}
+
+.form-card input:focus,
+.form-card textarea:focus,
+.form-card select:focus,
+.search-bar input:focus,
+.search-bar select:focus,
+.tag-form input:focus,
+.tag-edit-form input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+  transform: translateY(-1px);
 }
 
 .form-card input,
@@ -502,16 +544,16 @@ button:disabled {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 440px);
   align-items: stretch;
-  gap: 22px;
-  margin-bottom: 20px;
-  padding: 28px;
+  gap: 24px;
+  margin-bottom: 22px;
+  padding: 32px;
   color: #ffffff;
   background:
-    linear-gradient(135deg, rgba(17, 24, 39, 0.96), rgba(28, 68, 72, 0.94)),
-    #111827;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius);
-  box-shadow: 0 22px 60px rgba(17, 24, 39, 0.2);
+    linear-gradient(135deg, rgba(79, 70, 229, 0.95), rgba(37, 99, 235, 0.92)),
+    linear-gradient(180deg, rgba(79, 70, 229, 0.98), rgba(59, 130, 246, 0.9));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: calc(var(--radius) * 1.1);
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.15);
 }
 
 .hero-copy {
@@ -747,18 +789,24 @@ button:disabled {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
   min-height: 320px;
-  padding: 24px;
+  padding: 28px;
   overflow: hidden;
-  background: linear-gradient(180deg, #ffffff 0%, #eef6ff 100%);
-  border: 1px solid rgba(226, 235, 240, 0.95);
-  border-radius: 24px;
-  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+  background: linear-gradient(180deg, #ffffff 0%, #eef4ff 100%);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 26px;
+  box-shadow: var(--shadow-sm);
   transition:
-    transform 0.22s ease,
-    box-shadow 0.22s ease,
-    border-color 0.22s ease;
+    transform 0.24s ease,
+    box-shadow 0.24s ease,
+    border-color 0.24s ease;
+}
+
+.note-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(79, 70, 229, 0.34);
+  box-shadow: var(--shadow-md);
 }
 
 .clickable-note-card {
@@ -1319,4 +1367,260 @@ button:disabled {
   .notes-grid {
     grid-template-columns: 1fr;
   }
+}
+/* ================== ATTACHMENT PANEL ================== */
+.attachment-panel {
+  margin-top: 2.5rem;
+  padding: 2rem;
+  border: 1px solid rgba(79, 70, 229, 0.16);
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: var(--shadow-sm);
+}
+
+.attachment-panel h3 {
+  margin-bottom: 1.5rem;
+  color: #1e293b;
+  font-size: 1.25rem;
+  letter-spacing: 0.01em;
+}
+
+.attachment-panel h3 {
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.attachment-list {
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ================== ATTACHMENT CARD ================== */
+.attachment-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.attachment-card:hover {
+  border-color: rgba(79, 70, 229, 0.28);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.attachment-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.attachment-info svg {
+  flex-shrink: 0;
+  color: #4f46e5;
+  width: 28px;
+  height: 28px;
+}
+
+.attachment-info div {
+  min-width: 0;
+  flex: 1;
+}
+
+.attachment-info h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1f2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.attachment-info p {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.attachment-info small {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.attachment-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: 1rem;
+  flex-shrink: 0;
+}
+
+.attachment-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: #f3f4f6;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0;
+}
+
+.attachment-actions button:hover {
+  background: #4f46e5;
+  color: #ffffff;
+  transform: scale(1.05);
+}
+
+.attachment-actions button:active {
+  transform: scale(0.95);
+}
+
+.preview-dialog {
+  width: min(900px, 100%);
+  max-height: min(90vh, 760px);
+  overflow: hidden;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 32px 90px rgba(15, 23, 42, 0.18);
+}
+
+.preview-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.preview-dialog-header h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.preview-dialog-header p {
+  margin: 4px 0 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.preview-dialog-content {
+  padding: 0;
+  min-height: 420px;
+  background: #111827;
+}
+
+.preview-image,
+.preview-iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  border: none;
+  display: block;
+}
+
+.preview-image {
+  object-fit: contain;
+}
+
+.preview-fallback {
+  display: grid;
+  place-items: center;
+  min-height: 420px;
+  color: #f8fafc;
+  padding: 20px;
+}
+
+.preview-fallback p {
+  margin: 0 0 16px;
+  text-align: center;
+  color: #e5e7eb;
+}
+
+.preview-fallback a {
+  color: #a855f7;
+  font-weight: 600;
+}
+
+/* ================== UPLOAD CONTAINER ================== */
+.attachment-upload-container {
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.05) 0%, rgba(99, 102, 241, 0.03) 100%);
+  border: 2px dashed #4f46e5;
+  border-radius: 12px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.attachment-upload-container:hover {
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(99, 102, 241, 0.08) 100%);
+  border-color: #6366f1;
+}
+
+.attachment-upload-container h3 {
+  display: none;
+}
+
+.attachment-upload-container input[type="file"] {
+  display: none;
+}
+
+.attachment-upload-container p {
+  margin: 0.75rem 0;
+  font-size: 0.95rem;
+  color: #4f46e5;
+  font-weight: 500;
+}
+
+.attachment-upload-container p.error-message {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.attachment-upload-container button {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.attachment-upload-container button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+}
+
+.attachment-upload-container button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }

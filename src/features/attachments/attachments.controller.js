@@ -8,6 +8,13 @@ import {
 
 export const uploadAttachmentsController = async (req, res, next) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Attachment file is required.",
+      });
+    }
+
     const attachment = await uploadAttachment({
       noteId: req.params.noteId,
       userId: req.user.id,
@@ -15,7 +22,7 @@ export const uploadAttachmentsController = async (req, res, next) => {
     });
     return res.status(201).json({
       success: true,
-      message: "attachments uploaded successfully ",
+      message: "attachments uploaded successfully",
       data: attachment,
     });
   } catch (error) {

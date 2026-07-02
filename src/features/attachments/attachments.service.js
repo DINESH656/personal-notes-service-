@@ -36,9 +36,9 @@ export const uploadAttachment = async ({ noteId, userId, file }) => {
   let uploadedFile;
   try {
     await client.query("BEGIN");
-    uploadedFile = await uploadedFile({ file, userId, noteId });
+    uploadedFile = await uploadFile(file, userId, noteId);
 
-    const result = client.query(
+    const result = await client.query(
       `INSERT INTO attachments(
         note_id,
           user_id,
@@ -66,18 +66,20 @@ export const uploadAttachment = async ({ noteId, userId, file }) => {
       client,
       noteId,
       userId,
-      actionType: "UPLOAD_ATTACHMENT",
+      actionType: "ATTACHMENT_ADD",
       actionDescription: `Uploaded attachment "${uploadedFile.originalFileName}"`,
     });
     await client.query("COMMIT");
+
+    return result.rows[0];
   } catch (error) {
     await client.query("ROLLBACK");
     if (uploadedFile) {
       try {
-        await deleteFile(uploadedFile.storedFileName);
+        await deleteFile(uploadedFile.storagePath);
       } catch (deleteError) {
         console.error(
-          "faled to remove uploaded file after the rollback: ",
+          "failed to remove uploaded file after the rollback: ",
           deleteError.message,
         );
       }
@@ -97,11 +99,6 @@ export const getAttachments = async ({ noteId, userId }) => {
         ORDER BY created_at DESC`,
     [noteId, userId],
   );
-  if (result.rows.length === 0) {
-    const error = new Error("note not found");
-    error.statusCode = 404;
-    throw error;
-  }
   return result.rows;
 };
 

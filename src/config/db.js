@@ -23,6 +23,7 @@ export const checkConnection = async () => {
 
   try {
     console.log("Database connected successfully");
+    // Connected. Migrations should be applied via scripts/migrate_full_schema.js
   } finally {
     client.release();
   }

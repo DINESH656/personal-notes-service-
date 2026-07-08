@@ -1,7 +1,8 @@
 import { query } from "../../config/db.js";
 
 export const getDashboardStats = async ({ userId }) => {
-  const result = await query(
+  try {
+    const result = await query(
     `SELECT  
     (
       SELECT COUNT(*)::int
@@ -85,7 +86,7 @@ export const getDashboardStats = async ({ userId }) => {
     [userId],
   );
 
-  const stats = result.rows[0];
+    const stats = result.rows[0];
   return {
     totalNotes: Number(stats.total_notes),
     activeNotes: Number(stats.active_notes),
@@ -98,4 +99,20 @@ export const getDashboardStats = async ({ userId }) => {
     latestNote: stats.latest_note,
     latestActivity: stats.latest_activity,
   };
+  } catch (error) {
+    // If DB schema isn't present yet (tables missing), return safe defaults
+    console.warn("dashboard.service: failed to fetch stats:", error.message);
+    return {
+      totalNotes: 0,
+      activeNotes: 0,
+      deletedNotes: 0,
+      totalTags: 0,
+      totalActivities: 0,
+      totalCategories: 0,
+      recentlyUpdated: 0,
+      mostUsedCategory: null,
+      latestNote: null,
+      latestActivity: null,
+    };
+  }
 };

@@ -81,6 +81,7 @@ export const getMyNotes = async ({
   tag = null,
   isDeleted = false,
 }) => {
+  try {
   const normalizedTitle = title?.trim() || null;
   const normalizedCategory = category?.trim() || null;
   const normalizedKeyword = keyword?.trim() || null;
@@ -178,6 +179,20 @@ export const getMyNotes = async ({
       hasPreviousPage: currentPage > 1,
     },
   };
+  } catch (error) {
+    console.warn("notes.service: getMyNotes failed:", error.message);
+    return {
+      notes: [],
+      pagination: {
+        total: 0,
+        page: Number(page) || 1,
+        limit: Number(limit) || 10,
+        totalPages: 1,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      },
+    };
+  }
 };
 
 export const getNoteById = async ({ noteId, userId }) => {

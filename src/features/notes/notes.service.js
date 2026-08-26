@@ -1,5 +1,6 @@
 import { query, getClient } from "../../config/db.js";
 import { logActivity } from "../activities/activities.service.js";
+import crypto from "crypto";
 
 const NOTE_SELECT_FIELDS = `
   note_id,
@@ -53,10 +54,10 @@ const normalizePagination = ({ page = 1, limit = 10 }) => {
 
 export const createNote = async ({ userId, title, content, category }) => {
   const result = await query(
-    `INSERT INTO notes (user_id, title, content, category)
-     VALUES ($1, $2, $3, $4)
+    `INSERT INTO notes (note_id, user_id, title, content, context, category)
+     VALUES ($1, $2, $3, $4, $4, $5)
      RETURNING ${NOTE_SELECT_FIELDS}`,
-    [userId, title.trim(), content.trim(), category.trim()],
+    [`note_${crypto.randomUUID()}`, userId, title.trim(), content.trim(), category.trim()],
   );
 
   const note = result.rows[0];

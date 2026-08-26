@@ -1,4 +1,5 @@
 import { query } from "../../config/db.js";
+import crypto from "crypto";
 
 export const logActivity = async ({
   client = null,
@@ -11,6 +12,7 @@ export const logActivity = async ({
   await executor.query(
     `INSERT INTO note_activities
         (
+        activity_id,
         note_id,
         user_id,
         action_type,
@@ -19,8 +21,10 @@ export const logActivity = async ({
         $1,
         $2,
         $3,
-        $4)`,
-    [noteId, userId, actionType, actionDescription],
+        $4,
+        $5)
+      `,
+    [`activity_${crypto.randomUUID()}`, noteId, userId, actionType, actionDescription],
   );
 };
 

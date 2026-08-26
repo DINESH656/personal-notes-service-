@@ -1,5 +1,6 @@
 import { query, getClient } from "../../config/db.js";
 import { logActivity } from "../activities/activities.service.js";
+import crypto from "crypto";
 import {
   uploadFile,
   deleteFile,
@@ -40,6 +41,7 @@ export const uploadAttachment = async ({ noteId, userId, file }) => {
 
     const result = await client.query(
       `INSERT INTO attachments(
+        attachment_id,
         note_id,
           user_id,
           original_file_name,
@@ -49,9 +51,10 @@ export const uploadAttachment = async ({ noteId, userId, file }) => {
           storage_bucket,
           storage_path
         )VALUES (
-        $1,$2,$3,$4,$5,$6,$7,$8
+        $1,$2,$3,$4,$5,$6,$7,$8,$9
         ) RETURNING ${ATTACHMENT_SELECT_FIELDS}`,
       [
+        `attachment_${crypto.randomUUID()}`,
         noteId,
         userId,
         uploadedFile.originalFileName,

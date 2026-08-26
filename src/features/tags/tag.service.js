@@ -1,5 +1,6 @@
 import { query, getClient } from "../../config/db.js";
 import { logActivity } from "../activities/activities.service.js";
+import crypto from "crypto";
 
 const TAG_SELECT_FIELDS = `
   tag_id,
@@ -37,10 +38,10 @@ export const createTag = async ({ userId, tagName }) => {
     }
 
     const result = await client.query(
-      `INSERT INTO tags (user_id, tag_name)
-       VALUES ($1, $2)
+      `INSERT INTO tags (tag_id, user_id, tag_name)
+       VALUES ($1, $2, $3)
        RETURNING ${TAG_SELECT_FIELDS}`,
-      [userId, normalizedTag],
+      [`tag_${crypto.randomUUID()}`, userId, normalizedTag],
     );
 
     const tag = result.rows[0];

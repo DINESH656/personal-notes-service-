@@ -30,7 +30,24 @@ const AttachmentList = ({ noteId, refreshTrigger }) => {
 
             const response = await getAttachments(noteId);
 
-            setAttachments(response);
+            const attachmentsWithPreviewUrls = await Promise.all(
+                response.map(async (attachment) => {
+                    if (!attachment.file_type?.startsWith("image/")) {
+                        return attachment;
+                    }
+
+                    try {
+                        const preview = await getAttachmentDownloadUrl(
+                            attachment.attachment_id,
+                        );
+                        return { ...attachment, previewUrl: preview.signedUrl };
+                    } catch {
+                        return attachment;
+                    }
+                }),
+            );
+
+            setAttachments(attachmentsWithPreviewUrls);
         } catch (error) {
             setError(
                 error.response?.data?.message ||

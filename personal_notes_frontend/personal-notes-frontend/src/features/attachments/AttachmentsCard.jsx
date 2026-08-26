@@ -49,7 +49,15 @@ const AttachmentsCard = ({
 
             <div className="attachment-info">
 
-                {getFileIcon(attachment.file_type)}
+                {attachment.previewUrl ? (
+                    <img
+                        src={attachment.previewUrl}
+                        alt={attachment.original_file_name}
+                        style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 8 }}
+                    />
+                ) : (
+                    getFileIcon(attachment.file_type)
+                )}
 
                 <div>
                     <h4 title={attachment.original_file_name}>{attachment.original_file_name}</h4>

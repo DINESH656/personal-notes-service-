@@ -2,8 +2,6 @@
 node_modules/
 npm-debug.log
 yarn-error.log
-package-lock.json
-yarn.lock
 
 # Environment variables
 .env
@@ -28,4 +26,6 @@ logs/
 # Build output
 dist/
 build/
+test-results/
+playwright-report/
 personal_notes_service_project.zip

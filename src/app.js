@@ -1,5 +1,8 @@
 import express from "express";
 import cors from "cors";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import userRoutes from "./features/users/user.routes.js";
 import noteRoutes from "./features/notes/notes.router.js";
 import tagRoutes from "./features/tags/tag.router.js";
@@ -8,11 +11,18 @@ import dashboardRoutes from "./features/dashboard/dashboard.router.js";
 import attachmentRoutes from "./features/attachments/attachments.routes.js";
 
 const app = express();
+const currentFile = fileURLToPath(import.meta.url);
+const currentDirectory = path.dirname(currentFile);
+const frontendBuildPath = path.resolve(
+  currentDirectory,
+  "../personal_notes_frontend/personal-notes-frontend/build",
+);
+const frontendIndexPath = path.join(frontendBuildPath, "index.html");
 
 app.use(cors());
 app.use(express.json());
 
-app.get("/", (req, res) => {
+app.get("/api/health", (req, res) => {
   return res.status(200).json({
     success: true,
     message: "Personal Knowledge Base API is running",
@@ -25,6 +35,17 @@ app.use("/api/tags", tagRoutes);
 app.use("/api/activities", activityRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/attachments", attachmentRoutes);
+
+if (fs.existsSync(frontendIndexPath)) {
+  app.use(express.static(frontendBuildPath));
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api/")) {
+      return next();
+    }
+
+    return res.sendFile(frontendIndexPath);
+  });
+}
 
 app.use((req, res) => {
   return res.status(404).json({

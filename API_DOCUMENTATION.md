@@ -1,6 +1,8 @@
 # Personal Notes Service API
 
-Base URL: `http://localhost:8002/api`
+Base URL: `http://localhost:8008/api`
+
+In production, replace the host with the deployed service URL. The frontend uses this same-origin `/api` path automatically.
 
 All protected routes require:
 

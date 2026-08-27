@@ -18,7 +18,7 @@ const formatFileSize = (bytes) => {
         return `${(bytes / 1024).toFixed(1)} KB`;
     }
 
-    return `${(bytes / (1024 * 1204)).toFixed(2)}MB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 };
 const getFileIcon = (fileType) => {
     if (fileType.startsWith('image/')) {

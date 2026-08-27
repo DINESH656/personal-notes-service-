@@ -1,8 +1,6 @@
 # Personal Knowledge Base V2
 
-A full-stack personal notes application with authentication, advanced search, tags, pagination, sorting, soft delete, activity tracking, dashboard stats, API documentation, and Neon PostgreSQL integration.
-
-Document attachments are intentionally not implemented in this version.
+A full-stack personal notes application with authentication, advanced search, tags, pagination, sorting, soft delete, activity tracking, dashboard stats, document attachments, API documentation, Neon PostgreSQL integration, and Supabase Storage integration.
 
 ## Tech Stack
 
@@ -19,6 +17,7 @@ Document attachments are intentionally not implemented in this version.
 - Pagination metadata for frontend controls
 - Sorting by newest, oldest, title A-Z, and title Z-A
 - Tags CRUD and many-to-many note assignment
+- Document and image attachments backed by Supabase Storage
 - Soft delete and restore from Trash
 - Activity history for create, view, update, delete, restore, and tag assignment
 - Dashboard stats for notes, tags, categories, and activity
@@ -37,6 +36,7 @@ src/
     tags/
     activities/
     dashboard/
+    attachments/
 personal_notes_frontend/personal-notes-frontend/
 API_DOCUMENTATION.md
 ```
@@ -87,6 +87,9 @@ Copy `.env.example` to `.env` and fill in the values:
 PORT=8008
 DATABASE_URL=postgresql://user:password@host:5432/database
 JWT_SECRET=replace_with_a_long_random_secret
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SECRET_KEY=replace_with_your_server_key
+SUPABASE_BUCKET=attachments
 ```
 
 Make sure `DATABASE_URL` points to the existing Neon database that contains the project tables.

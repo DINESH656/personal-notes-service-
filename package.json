@@ -4,6 +4,9 @@
   "description": "Personal Notes Service API",
   "main": "src/server.js",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "nodemon src/server.js",
     "build": "npm install --prefix personal_notes_frontend/personal-notes-frontend && npm run build --prefix personal_notes_frontend/personal-notes-frontend",
@@ -15,7 +18,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.0",
-    "bcrypt": "^5.1.1",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",

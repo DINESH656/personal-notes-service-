@@ -88,7 +88,7 @@ const Register = () => {
 
       <div className="auth-card">
 
-        <h2>Create Account 🚀</h2>
+        <h2>Create Account</h2>
 
         <p>
           Register to begin building your personal knowledge base.

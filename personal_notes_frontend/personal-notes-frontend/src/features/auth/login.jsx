@@ -78,7 +78,7 @@ const Login = () => {
 
       <div className="auth-card">
 
-        <h2>Welcome Back 👋</h2>
+        <h2>Welcome Back</h2>
 
         <p>
           Login to continue managing your personal knowledge base.

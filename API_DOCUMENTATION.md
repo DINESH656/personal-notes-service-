@@ -172,3 +172,35 @@ Query params:
 `GET /dashboard`
 
 Returns note, tag, category, and activity counters plus the latest note/activity for the authenticated user.
+
+## Attachments
+
+Attachment routes are protected and require `Authorization: Bearer <token>`.
+
+### Upload Attachment
+
+`POST /attachments/notes/:noteId/attachments`
+
+Send as `multipart/form-data`:
+
+| Field | Description |
+| --- | --- |
+| `attachment` | File to upload. Supports JPG, JPEG, PNG, PDF, DOCX, and TXT files. |
+
+### List Note Attachments
+
+`GET /attachments/notes/:noteId/attachments`
+
+Returns all attachments for the authenticated user's note.
+
+### Get Attachment Download URL
+
+`GET /attachments/:attachmentId/download`
+
+Returns attachment metadata and a short-lived Supabase signed URL.
+
+### Delete Attachment
+
+`DELETE /attachments/:attachmentId`
+
+Deletes the attachment record and removes the file from Supabase Storage.

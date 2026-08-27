@@ -1,87 +1,71 @@
-# Personal Knowledge Base V2
+# Personal Knowledge Base
 
-A full-stack personal notes application with authentication, advanced search, tags, pagination, sorting, soft delete, activity tracking, dashboard stats, document attachments, API documentation, Neon PostgreSQL integration, and Supabase Storage integration.
+A full-stack notes application for storing personal knowledge, organizing notes with tags, tracking activity, and managing file attachments.
+
+Live demo: https://personal-notes-service-aiwi.onrender.com
+
+## Overview
+
+Personal Knowledge Base is built as a single deployable Node service. The Express API serves the React production build, so the deployed app runs from one public URL and uses same-origin `/api` requests.
+
+## Features
+
+- JWT authentication with registration, login, and current-user lookup
+- User-scoped notes CRUD
+- Advanced note filtering by title, category, keyword, tag, and sort order
+- PostgreSQL full-text search support
+- Tag CRUD and note-to-tag assignment
+- Soft delete, Trash view, and note restore
+- Activity history for note and tag actions
+- Dashboard stats for notes, tags, categories, and recent activity
+- Supabase-backed document and image attachments
+- Image attachment preview flow
+- Playwright end-to-end smoke test
 
 ## Tech Stack
 
 - Backend: Node.js, Express, PostgreSQL, JWT, bcrypt
 - Frontend: React, React Router, Axios, React Hot Toast
-- Database: PostgreSQL full-text search with `tsvector` and GIN indexing
-
-## Features
-
-- User registration, login, and current-user endpoint
-- User-scoped notes CRUD
-- Advanced search by title, category, content keyword, and tag
-- Efficient keyword search using PostgreSQL full-text search
-- Pagination metadata for frontend controls
-- Sorting by newest, oldest, title A-Z, and title Z-A
-- Tags CRUD and many-to-many note assignment
-- Document and image attachments backed by Supabase Storage
-- Soft delete and restore from Trash
-- Activity history for create, view, update, delete, restore, and tag assignment
-- Dashboard stats for notes, tags, categories, and activity
+- Database: Neon PostgreSQL
+- Storage: Supabase Storage
+- Deployment: Render Web Service
+- Testing: Playwright
 
 ## Project Structure
 
 ```text
-src/
-  app.js
-  server.js
-  config/db.js
-  middleware/auth.middleware.js
-  features/
-    users/
-    notes/
-    tags/
-    activities/
-    dashboard/
-    attachments/
-personal_notes_frontend/personal-notes-frontend/
-API_DOCUMENTATION.md
+.
+├── src/
+│   ├── app.js
+│   ├── server.js
+│   ├── config/
+│   ├── middleware/
+│   └── features/
+│       ├── activities/
+│       ├── attachments/
+│       ├── dashboard/
+│       ├── notes/
+│       ├── tags/
+│       └── users/
+├── personal_notes_frontend/
+│   └── personal-notes-frontend/
+├── scripts/
+├── tests/e2e/
+├── API_DOCUMENTATION.md
+├── render.yaml
+└── package.json
 ```
 
-## Run Everything On One Port
+## Requirements
 
-The production build runs the React frontend and Express API from one Node process:
-
-```bash
-npm install
-npm run start:full
-```
-
-Open `http://localhost:8008`. The API health check is available at `http://localhost:8008/api/health`.
-
-For development, build the frontend once and start the API:
-
-```bash
-npm run build
-npm run dev
-```
-
-The frontend uses the same-origin `/api` path, so there is no second port or CORS URL to configure.
-
-## End-to-End Test
-
-Start the application with `npm run start:full`, then run the browser smoke test in another terminal:
-
-```bash
-E2E_EMAIL=dines@example.com E2E_PASSWORD=your_demo_password npm run test:e2e
-```
-
-On PowerShell:
-
-```powershell
-$env:E2E_EMAIL = "dines@example.com"
-$env:E2E_PASSWORD = "your_demo_password"
-npm run test:e2e
-```
-
-The test checks the health endpoint, login, dashboard, note navigation, and an actual image preview.
+- Node.js 22 or newer
+- npm
+- Neon PostgreSQL database with the project schema
+- Supabase project with an `attachments` storage bucket
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` and fill in the values:
+Create a `.env` file in the project root:
 
 ```env
 PORT=8008
@@ -92,36 +76,143 @@ SUPABASE_SECRET_KEY=replace_with_your_server_key
 SUPABASE_BUCKET=attachments
 ```
 
-Make sure `DATABASE_URL` points to the existing Neon database that contains the project tables.
+Never commit real `.env` values. Use `.env.example` as the template.
 
-Current expected Neon tables:
+## Local Setup
 
-- `users`
-- `notes`
-- `tags`
-- `note_tags`
-- `note_activities`
-- `attachments`
+Install backend dependencies:
 
-## API Reference
+```bash
+npm install
+```
 
-See [API_DOCUMENTATION.md](API_DOCUMENTATION.md).
+Build the React frontend:
 
-## Production Notes
+```bash
+npm run build
+```
 
-- Use a strong `JWT_SECRET` and do not commit real secrets.
-- Keep `DATABASE_URL` in environment configuration only.
-- This project uses the existing Neon schema configured in `.env`.
-- Keep the Neon full-text search indexes enabled for scalable note search.
+Start the full application:
 
-## Deploy From GitHub
+```bash
+npm start
+```
 
-Render is the simplest fit for this Express plus React application. Create a new Web Service from the GitHub repository; Render can use the included `render.yaml`, or configure these commands manually:
+Open:
 
-- Build command: `npm install && npm run build`
-- Start command: `npm start`
-- Health check path: `/api/health`
+```text
+http://localhost:8008
+```
 
-Add `DATABASE_URL`, `JWT_SECRET`, and the Supabase variables in the hosting provider's environment settings. Never commit `.env`; commit `.env.example` instead.
+Health check:
 
-Vercel can host the React build, but its serverless model requires restructuring the Express API into separate functions. A single Render or Railway service preserves the current backend and database connection model with one public URL.
+```text
+http://localhost:8008/api/health
+```
+
+## Development
+
+For backend development with restart-on-save:
+
+```bash
+npm run dev
+```
+
+The React app uses `baseURL: "/api"`, so it works on the same origin in production. If you run the React development server separately, configure a proxy or use the production one-port flow above.
+
+## Database Notes
+
+This project expects an existing Neon schema with these tables:
+
+```text
+users
+notes
+tags
+note_tags
+note_activities
+attachments
+```
+
+The migration scripts in `scripts/` are helper scripts for local setup or recovery. If your Neon database is already configured, you do not need to run them before deployment.
+
+## API Documentation
+
+See [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for available endpoints and request examples.
+
+## End-to-End Test
+
+The e2e test validates the deployed or local app by checking health, login, dashboard navigation, note opening, and image preview.
+
+Run against local:
+
+```powershell
+$env:E2E_BASE_URL = "http://127.0.0.1:8008"
+$env:E2E_EMAIL = "test@example.com"
+$env:E2E_PASSWORD = "test-password"
+npm run test:e2e
+```
+
+Run against the live Render deployment:
+
+```powershell
+$env:E2E_BASE_URL = "https://personal-notes-service-aiwi.onrender.com"
+$env:E2E_EMAIL = "test@example.com"
+$env:E2E_PASSWORD = "test-password"
+npm run test:e2e
+```
+
+Use a dedicated test account with at least one note and one image attachment.
+
+## Deployment
+
+This repo is configured for Render with `render.yaml`.
+
+Render settings:
+
+```text
+Build command: npm install && npm run build
+Start command: npm start
+Health check path: /api/health
+```
+
+Render environment variables:
+
+```env
+DATABASE_URL=your_neon_connection_string
+JWT_SECRET=your_strong_secret
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_SECRET_KEY=your_supabase_service_key
+SUPABASE_BUCKET=attachments
+NODE_VERSION=22
+```
+
+After deployment, verify:
+
+```text
+https://your-render-service.onrender.com/api/health
+https://your-render-service.onrender.com/login
+```
+
+## Useful Scripts
+
+```text
+npm run build       Build the React frontend
+npm start           Start the production Express server
+npm run start:full  Build frontend, then start server
+npm run dev         Start backend with nodemon
+npm run test:e2e    Run Playwright e2e tests
+```
+
+## Deployment Status
+
+Current live deployment:
+
+```text
+https://personal-notes-service-aiwi.onrender.com
+```
+
+Latest verified checks:
+
+- Backend health endpoint returns `200 OK`
+- React app is served from Render
+- Live Playwright e2e smoke test passed
